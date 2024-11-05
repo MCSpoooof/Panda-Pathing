@@ -11,7 +11,7 @@ import kotlin.jvm.JvmField;
  * @author Harrison Womack - 10158 Scott's Bots
  * @version 1.0, 3/5/2024
  */
-public class CustomPIDFCoefficients {
+public class PIDFSet {
     @JvmField public double P;
     @JvmField public double I;
     @JvmField public double D;
@@ -29,7 +29,7 @@ public class CustomPIDFCoefficients {
      * @param d the coefficient for the derivative factor.
      * @param f the coefficient for the feedforward factor.
      */
-    public CustomPIDFCoefficients(double p, double i, double d, double f) {
+    public PIDFSet(double p, double i, double d, double f) {
         P = p;
         I = i;
         D = d;
@@ -45,7 +45,7 @@ public class CustomPIDFCoefficients {
      * @param d the coefficient for the derivative factor.
      * @param f the equation for the feedforward factor.
      */
-    public CustomPIDFCoefficients(double p, double i, double d, FeedForwardConstant f) {
+    public PIDFSet(double p, double i, double d, FeedForwardConstant f) {
         usingEquation = true;
         P = p;
         I = i;

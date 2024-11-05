@@ -6,7 +6,7 @@ import org.firstinspires.ftc.teamcode.pandaPathing.pathGeneration.MathFunctions;
 import org.firstinspires.ftc.teamcode.pandaPathing.pathGeneration.Point;
 import org.firstinspires.ftc.teamcode.pandaPathing.pathGeneration.Vector;
 import org.firstinspires.ftc.teamcode.pandaPathing.util.CustomFilteredPIDFCoefficients;
-import org.firstinspires.ftc.teamcode.pandaPathing.util.CustomPIDFCoefficients;
+import org.firstinspires.ftc.teamcode.pandaPathing.util.PIDFSet;
 import org.firstinspires.ftc.teamcode.pandaPathing.util.KalmanFilterParameters;
 
 /**
@@ -37,14 +37,14 @@ public class FollowerConstants {
 
 
     // Translational PIDF coefficients (don't use integral)
-    public static CustomPIDFCoefficients translationalPIDFCoefficients = new CustomPIDFCoefficients(
+    public static PIDFSet translationalPIDFCoefficients = new PIDFSet(
             0.1,
             0,
             0,
             0);
 
     // Translational Integral
-    public static CustomPIDFCoefficients translationalIntegral = new CustomPIDFCoefficients(
+    public static PIDFSet translationalIntegral = new PIDFSet(
             0,
             0,
             0,
@@ -55,7 +55,7 @@ public class FollowerConstants {
 
 
     // Heading error PIDF coefficients
-    public static CustomPIDFCoefficients headingPIDFCoefficients = new CustomPIDFCoefficients(
+    public static PIDFSet headingPIDFCoefficients = new PIDFSet(
             1,
             0,
             0,
@@ -164,14 +164,14 @@ public class FollowerConstants {
     public static double translationalPIDFSwitch = 3;
 
     // Secondary translational PIDF coefficients (don't use integral)
-    public static CustomPIDFCoefficients secondaryTranslationalPIDFCoefficients = new CustomPIDFCoefficients(
+    public static PIDFSet secondaryTranslationalPIDFCoefficients = new PIDFSet(
             0.3,
             0,
             0.01,
             0);
 
     // Secondary translational Integral value
-    public static CustomPIDFCoefficients secondaryTranslationalIntegral = new CustomPIDFCoefficients(
+    public static PIDFSet secondaryTranslationalIntegral = new PIDFSet(
             0,
             0,
             0,
@@ -185,7 +185,7 @@ public class FollowerConstants {
     public static double headingPIDFSwitch = Math.PI / 20;
 
     // Secondary heading error PIDF coefficients
-    public static CustomPIDFCoefficients secondaryHeadingPIDFCoefficients = new CustomPIDFCoefficients(
+    public static PIDFSet secondaryHeadingPIDFCoefficients = new PIDFSet(
             5,
             0,
             0.08,

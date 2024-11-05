@@ -2,8 +2,6 @@ package org.firstinspires.ftc.teamcode.Constants;
 
 import com.acmerobotics.dashboard.config.Config;
 
-import org.firstinspires.ftc.teamcode.pandaPathing.util.CustomPIDFCoefficients;
-
 @Config
 public class RobotConstants {
 
@@ -74,12 +72,5 @@ public class RobotConstants {
     // the time it takes for the pixels to fall through the transfer
     CLAW_CLOSING_TIME = 200; // TODO: find this later
 
-    public static CustomPIDFCoefficients
 
-            // lift PIDF coefficients
-            liftPIDFCoefficients = new CustomPIDFCoefficients(
-            0.006,
-            0,
-            0.00027,
-            0);
 }
