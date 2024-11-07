@@ -39,11 +39,11 @@ public class TelePOP extends OpMode {
         // motor configs
         allMotors.addAll(tracking);
         leftFront   = hardwareMap.get(DcMotorEx.class, "cm0");
-        leftRear    = hardwareMap.get(DcMotorEx.class, "cm2");
-        rightRear   = hardwareMap.get(DcMotorEx.class, "cm3");
+        leftRear    = hardwareMap.get(DcMotorEx.class, "em1");
+        rightRear   = hardwareMap.get(DcMotorEx.class, "em2");
         rightFront  = hardwareMap.get(DcMotorEx.class, "cm1");
-        frontSlides = hardwareMap.get(DcMotorEx.class, "em0");
-        backSlides  = hardwareMap.get(DcMotorEx.class, "em1");
+        frontSlides = hardwareMap.get(DcMotorEx.class, "cm2");
+        backSlides  = hardwareMap.get(DcMotorEx.class, "cm3");
         hangerL     = hardwareMap.get(DcMotorEx.class, "em2");
         hangerR     = hardwareMap.get(DcMotorEx.class, "em2");
         for(DcMotorEx motor :   allMotors) motor.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);

@@ -36,10 +36,10 @@ public class TeleOpEnhancements extends OpMode {
     @Override
     public void init() {
         follower = new Follower(hardwareMap);
-        leftFront = hardwareMap.get(DcMotorEx.class, leftFrontMotorName);
-        leftRear = hardwareMap.get(DcMotorEx.class, leftRearMotorName);
-        rightRear = hardwareMap.get(DcMotorEx.class, rightRearMotorName);
-        rightFront = hardwareMap.get(DcMotorEx.class, rightFrontMotorName);
+        leftFront   = hardwareMap.get(DcMotorEx.class, "cm0");
+        leftRear    = hardwareMap.get(DcMotorEx.class, "em1");
+        rightRear   = hardwareMap.get(DcMotorEx.class, "em2");
+        rightFront  = hardwareMap.get(DcMotorEx.class, "cm1");
 
         leftFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         leftRear.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
