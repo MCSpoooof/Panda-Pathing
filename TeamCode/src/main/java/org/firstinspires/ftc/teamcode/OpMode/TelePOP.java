@@ -16,7 +16,7 @@ import java.util.*;
 @Config
 @TeleOp(name = "Telepepepop", group = "Drive")
 public class TelePOP extends OpMode {
-    private Follower robot = new Follower(hardwareMap);
+    //private Follower robot = new Follower(hardwareMap);
 
     // hardware definitions
     public DcMotorEx leftFront, leftRear, rightFront, rightRear, frontSlides, backSlides, hangerL, hangerR;
@@ -65,15 +65,36 @@ public class TelePOP extends OpMode {
         slideyController = new PIDController(p, i, d);
 
         // configs
-        robot.startTeleopDrive();
+        //robot.startTeleopDrive();
         telemetry = new MultipleTelemetry(this.telemetry, FtcDashboard.getInstance().getTelemetry());
     }
 
     public void loop(){
         // driving
-        strafePow = gamepad2.left_trigger != 0 ? -gamepad2.left_trigger : gamepad2.right_trigger;
+        /*strafePow = gamepad2.left_trigger != 0 ? -gamepad2.left_trigger : gamepad2.right_trigger;
         robot.setTeleOpMovementVectors(-gamepad1.left_stick_y, strafePow, -gamepad1.right_stick_x);
-        robot.update();
+        robot.update();*/
+        double drive  = gamepad1.left_stick_y;
+        double strafe = -gamepad1.left_stick_x;
+        double twist  = -gamepad1.right_stick_x;
+        int position = 0;
+        double speed = 1.0;
+        double[] speeds = {
+                (drive + strafe + twist),
+                (drive - strafe - twist),
+                (drive - strafe + twist),
+                (drive + strafe - twist)
+        };
+        double max = Math.abs(speeds[0]);
+        for(int i = 0; i < speeds.length; i++)
+            if (max < Math.abs(speeds[i])) max = Math.abs(speeds[i]);
+        if (max > 1)
+            for (int i = 0; i < speeds.length; i++) speeds[i] /= max;
+
+        leftFront.setPower(speeds[0]);
+        rightFront.setPower(speeds[1]);
+        leftRear.setPower(speeds[2]);
+        rightRear.setPower(speeds[3]);
 
         // calculate the slide power using pid
         slideyController.setPID(p, i, d);

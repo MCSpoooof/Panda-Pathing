@@ -118,17 +118,17 @@ public class MecanumDrive extends OpMode {
         back_left.setPower(speeds[2]);
         back_right.setPower(speeds[3]);
 
-    if (frontSlide.getCurrentPosition() > 3900 && gamepad2.left_stick_y < 0) {
-                position = 3200;
-            } else if (gamepad2.left_stick_y > 0) {
-                frontSlide.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                frontSlide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                position = 0;
-            } else if (gamepad2.left_stick_y != 0) {
-                position += 50 * -gamepad2.left_stick_y;
-            } else {
-                position = frontSlide.getCurrentPosition();
-            }
+//    if (frontSlide.getCurrentPosition() > 3900 && gamepad2.left_stick_y < 0) {
+//                position = 3200;
+//            } else if (gamepad2.left_stick_y > 0) {
+//                frontSlide.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+//                frontSlide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+//                position = 0;
+//            } else if (gamepad2.left_stick_y != 0) {
+//                position += 50 * -gamepad2.left_stick_y;
+//            } else {
+//                position = frontSlide.getCurrentPosition();
+//            }
 
 
             //speed multiplier
