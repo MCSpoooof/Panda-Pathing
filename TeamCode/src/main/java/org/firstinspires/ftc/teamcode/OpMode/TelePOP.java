@@ -6,6 +6,7 @@ import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.arcrobotics.ftclib.controller.PIDController;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.Servo;
 
@@ -19,11 +20,11 @@ public class TelePOP extends OpMode {
     //private Follower robot = new Follower(hardwareMap);
 
     // hardware definitions
-    public DcMotorEx leftFront, leftRear, rightFront, rightRear, frontSlides, backSlides, hangerL, hangerR;
+    public DcMotorEx leftFront, leftRear, rightFront, rightRear, frontSlides, backSlides;
     public List<DcMotorEx> tracking    = new ArrayList<DcMotorEx>(Arrays.asList(leftFront  , leftRear  , rightFront, rightRear));
-    public List<DcMotorEx> nonTracking = new ArrayList<DcMotorEx>(Arrays.asList(frontSlides, backSlides, hangerL   , hangerR  ));
+    public List<DcMotorEx> nonTracking = new ArrayList<DcMotorEx>(Arrays.asList(frontSlides, backSlides));
     public List<DcMotorEx> allMotors   = new ArrayList<DcMotorEx>(nonTracking);
-    public Servo drv4bL, drv4bR, timy, vbaR, vbaL, v4b;
+    public Servo drv4bL, drv4bR, timy, vbaR, vbaL;
 
     // slide PIDF
     public PIDController slideyController;
@@ -32,8 +33,8 @@ public class TelePOP extends OpMode {
     public static int target = 0;
     private final double TICKS_PER_DEG = 103.8/360;
 
-    boolean dUpPressed, dDownPressed, yPressed, aPressed;
-    double strafePow;
+    boolean dUpPressed, dDownPressed, yPressed, aPressed, rbumpPressed, extended;
+    double strafePow, extendPosR, extendPosL;
 
     public void init() {
         // motor configs
@@ -44,22 +45,29 @@ public class TelePOP extends OpMode {
         rightFront  = hardwareMap.get(DcMotorEx.class, "cm1");
         frontSlides = hardwareMap.get(DcMotorEx.class, "cm2");
         backSlides  = hardwareMap.get(DcMotorEx.class, "cm3");
-        hangerL     = hardwareMap.get(DcMotorEx.class, "em2");
-        hangerR     = hardwareMap.get(DcMotorEx.class, "em2");
-        for(DcMotorEx motor :   allMotors) motor.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
-        for(DcMotorEx motor :    tracking) motor.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
-        for(DcMotorEx motor : nonTracking) motor.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
-        leftFront .setDirection(DcMotorEx.Direction.REVERSE);
-        leftRear  .setDirection(DcMotorEx.Direction.REVERSE);
-        backSlides.setDirection(DcMotorEx.Direction.REVERSE);
+//        hangerL     = hardwareMap.get(DcMotorEx.class, "em2");
+//        hangerR     = hardwareMap.get(DcMotorEx.class, "em2");
+        leftFront .setDirection(DcMotorEx.Direction.FORWARD);
+        rightFront.setDirection(DcMotorEx.Direction.REVERSE);
+        leftRear  .setDirection(DcMotorEx.Direction.FORWARD);
+        rightRear .setDirection(DcMotorEx.Direction.REVERSE);
+
+        leftFront .setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        rightFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        leftRear  .setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        rightRear .setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        frontSlides.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        backSlides.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
+        frontSlides.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        frontSlides.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         // servo configs
-        drv4bL = hardwareMap.get(Servo.class, "cs0");
-        drv4bR = hardwareMap.get(Servo.class, "cs1");
-        timy   = hardwareMap.get(Servo.class, "cs2");
-        vbaL   = hardwareMap.get(Servo.class, "cs3");
-        vbaR   = hardwareMap.get(Servo.class, "cs4");
-        v4b    = hardwareMap.get(Servo.class, "cs5");
+        drv4bL = hardwareMap.get(Servo.class, "es0");
+        drv4bR = hardwareMap.get(Servo.class, "es1");
+        timy   = hardwareMap.get(Servo.class, "es2");
+        vbaL   = hardwareMap.get(Servo.class, "es3");
+        vbaR   = hardwareMap.get(Servo.class, "es4");
 
         // pid configs
         slideyController = new PIDController(p, i, d);
@@ -70,14 +78,14 @@ public class TelePOP extends OpMode {
     }
 
     public void loop(){
-        // driving
+        // epxperimental mecanum drive
         /*strafePow = gamepad2.left_trigger != 0 ? -gamepad2.left_trigger : gamepad2.right_trigger;
         robot.setTeleOpMovementVectors(-gamepad1.left_stick_y, strafePow, -gamepad1.right_stick_x);
         robot.update();*/
+        // classic mecanum drive
         double drive  = gamepad1.left_stick_y;
-        double strafe = -gamepad1.left_stick_x;
+        double strafe = gamepad2.left_trigger != 0 ? -gamepad2.left_trigger : 0;
         double twist  = -gamepad1.right_stick_x;
-        int position = 0;
         double speed = 1.0;
         double[] speeds = {
                 (drive + strafe + twist),
@@ -104,16 +112,16 @@ public class TelePOP extends OpMode {
         double power = pid + ff;
 
         // change slide target based on controller control
+        frontSlides.setPower(power);
+        backSlides.setPower(power);
         if(gamepad2.left_stick_y != 0) {
-            if (gamepad2.left_stick_y > 0 && slidePos < 1000) // upper limit
+            if (-gamepad2.left_stick_y > 0 && target > -1000) // upper limit
                 target += 10 * gamepad2.left_stick_y;
-            if (gamepad2.left_stick_y < 0 && slidePos > 0) // lower limit
+            if (-gamepad2.left_stick_y < 0 && target < 0) // lower limit
                 target += 10 * gamepad2.left_stick_y;
-            frontSlides.setPower(power);
-            backSlides.setPower(power);
         } else {
             if (gamepad2.dpad_up && !dUpPressed) {
-                target = 700; // top basket
+                target = -700; // top basket
                 dUpPressed = true;
             } else if (!gamepad2.dpad_up) dUpPressed = false;
             if (gamepad2.dpad_down && !dDownPressed) {
@@ -122,24 +130,40 @@ public class TelePOP extends OpMode {
             } else if (!gamepad2.dpad_down) dDownPressed = false;
         }
 
-        // four bar
-        if(gamepad2.y && !yPressed){
-            drv4bR.setPosition(1);
-            drv4bL.setPosition(1);
-            yPressed = true;
-        } else if(!gamepad2.y){
-            yPressed = false;
+        // extendys
+        if(gamepad2.right_stick_y != 0) {
+            if (-gamepad2.right_stick_y > 0 && drv4bR.getPosition() < 0.654) { // upper limit
+                extendPosL += 0.1*gamepad2.right_stick_y;
+                extendPosR -= 0.1*gamepad2.right_stick_y;
+                drv4bL.setPosition(extendPosL);
+                drv4bR.setPosition(extendPosR);
+            }
+            if (-gamepad2.right_stick_y < 0 && drv4bR.getPosition() > 0) { // lower limit
+                extendPosL += 0.1*gamepad2.right_stick_y;
+                extendPosR -= 0.1*gamepad2.right_stick_y;
+                drv4bL.setPosition(extendPosL);
+                drv4bR.setPosition(extendPosR);
+            }
+        } else {
+            if (gamepad2.right_bumper && !rbumpPressed) {
+                if (extended){
+                    drv4bR.setPosition(0);
+                    drv4bL.setPosition(1);
+                    extended = false;
+                }
+                else {
+                    drv4bR.setPosition(0.654);
+                    drv4bL.setPosition(0.305);
+                    extended = true;
+                }
+                rbumpPressed = true;
+            } else if (!gamepad2.right_bumper) rbumpPressed = false;
         }
-        if(gamepad2.a && !aPressed){
-            drv4bR.setPosition(0);
-            drv4bL.setPosition(0);
-            aPressed = true;
-        } else if(!gamepad2.a){
-            aPressed = false;
-        }
-
+        telemetry.addData("pid calc", slideyController.calculate(slidePos, target));
         telemetry.addData("pos", slidePos);
+        telemetry.addData("pos2", backSlides.getCurrentPosition());
         telemetry.addData("target", target);
+        telemetry.addData("servo pos", drv4bR.getPosition());
         telemetry.update();
     }
 }
