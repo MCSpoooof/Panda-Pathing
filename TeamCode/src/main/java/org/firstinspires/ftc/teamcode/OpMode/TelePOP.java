@@ -10,8 +10,6 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.Servo;
 
-import org.firstinspires.ftc.teamcode.pandaPathing.follower.Follower;
-
 import java.util.*;
 
 @Config
@@ -24,17 +22,17 @@ public class TelePOP extends OpMode {
     public List<DcMotorEx> tracking    = new ArrayList<DcMotorEx>(Arrays.asList(leftFront  , leftRear  , rightFront, rightRear));
     public List<DcMotorEx> nonTracking = new ArrayList<DcMotorEx>(Arrays.asList(frontSlides, backSlides));
     public List<DcMotorEx> allMotors   = new ArrayList<DcMotorEx>(nonTracking);
-    public Servo drv4bL, drv4bR, timy, vbaR, vbaL;
+    public Servo drv4bL, drv4bR, timy, neckR, neckL;
 
     // slide PIDF
     public PIDController slideyController;
-    public static double p = 0, i = 0, d = 0;
-    public static double f = 0;
+    public static double p = 0.004, i = 0, d = 0;
+    public static double f = 0.1;
     public static int target = 0;
     private final double TICKS_PER_DEG = 103.8/360;
 
-    boolean dUpPressed, dDownPressed, yPressed, aPressed, rbumpPressed, extended;
-    double strafePow, extendPosR, extendPosL;
+    boolean dUpPressed, dDownPressed, yPressed, aPressed, rbumpPressed, extended, backPressed, xPressed, bPressed, timyON;
+    double strafePow, extendPosR = 0, extendPosL = 1;
 
     public void init() {
         // motor configs
@@ -63,11 +61,11 @@ public class TelePOP extends OpMode {
         frontSlides.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         // servo configs
-        drv4bL = hardwareMap.get(Servo.class, "es0");
-        drv4bR = hardwareMap.get(Servo.class, "es1");
+        drv4bL = hardwareMap.get(Servo.class, "cs0");
+        drv4bR = hardwareMap.get(Servo.class, "es0");
         timy   = hardwareMap.get(Servo.class, "es2");
-        vbaL   = hardwareMap.get(Servo.class, "es3");
-        vbaR   = hardwareMap.get(Servo.class, "es4");
+        neckL = hardwareMap.get(Servo.class, "cs2");
+        neckR = hardwareMap.get(Servo.class, "cs4");
 
         // pid configs
         slideyController = new PIDController(p, i, d);
@@ -75,16 +73,20 @@ public class TelePOP extends OpMode {
         // configs
         //robot.startTeleopDrive();
         telemetry = new MultipleTelemetry(this.telemetry, FtcDashboard.getInstance().getTelemetry());
+
+        drv4bL.setPosition(1);
+        drv4bR.setPosition(0);
     }
 
     public void loop(){
+
         // epxperimental mecanum drive
         /*strafePow = gamepad2.left_trigger != 0 ? -gamepad2.left_trigger : gamepad2.right_trigger;
         robot.setTeleOpMovementVectors(-gamepad1.left_stick_y, strafePow, -gamepad1.right_stick_x);
         robot.update();*/
         // classic mecanum drive
         double drive  = gamepad1.left_stick_y;
-        double strafe = gamepad2.left_trigger != 0 ? -gamepad2.left_trigger : 0;
+        double strafe = gamepad1.left_trigger != 0 ? -gamepad1.left_trigger : 0;
         double twist  = -gamepad1.right_stick_x;
         double speed = 1.0;
         double[] speeds = {
@@ -132,38 +134,70 @@ public class TelePOP extends OpMode {
 
         // extendys
         if(gamepad2.right_stick_y != 0) {
-            if (-gamepad2.right_stick_y > 0 && drv4bR.getPosition() < 0.654) { // upper limit
-                extendPosL += 0.1*gamepad2.right_stick_y;
-                extendPosR -= 0.1*gamepad2.right_stick_y;
-                drv4bL.setPosition(extendPosL);
-                drv4bR.setPosition(extendPosR);
+            if (gamepad2.right_stick_y > 0 && drv4bR.getPosition() < 0.654) { // upper limit
+                extendPosR += 0.01*gamepad2.right_stick_y;
+                extendPosL -= 0.01*gamepad2.right_stick_y;
             }
-            if (-gamepad2.right_stick_y < 0 && drv4bR.getPosition() > 0) { // lower limit
-                extendPosL += 0.1*gamepad2.right_stick_y;
-                extendPosR -= 0.1*gamepad2.right_stick_y;
-                drv4bL.setPosition(extendPosL);
-                drv4bR.setPosition(extendPosR);
+            if (gamepad2.right_stick_y < 0 && drv4bR.getPosition() > 0) { // lower limit
+                extendPosR += 0.01*gamepad2.right_stick_y;
+                extendPosL -= 0.01*gamepad2.right_stick_y;
             }
         } else {
             if (gamepad2.right_bumper && !rbumpPressed) {
                 if (extended){
-                    drv4bR.setPosition(0);
-                    drv4bL.setPosition(1);
+                    extendPosR = 0;
+                    extendPosL = 1;
                     extended = false;
                 }
                 else {
-                    drv4bR.setPosition(0.654);
-                    drv4bL.setPosition(0.305);
+                    extendPosR = 0.654;
+                    extendPosL = 0.305;
                     extended = true;
                 }
                 rbumpPressed = true;
             } else if (!gamepad2.right_bumper) rbumpPressed = false;
         }
+        drv4bR.resetDeviceConfigurationForOpMode();
+        drv4bL.resetDeviceConfigurationForOpMode();
+        drv4bR.setPosition(extendPosR);
+        drv4bL.setPosition(extendPosL);
+
+        //v4b
+        if (gamepad2.a) {
+            neckL.setPosition(0);
+            neckR.setPosition(1);
+        }
+        else if (gamepad2.b) {
+            neckL.setPosition(1);
+            neckR.setPosition(0);
+        }
+
+        //timmy
+        if (gamepad2.x && !xPressed) {
+            if(!timyON) {
+                timy.setPosition(0);
+                timyON = true;
+            } else if(timyON){
+                timy.setPosition(0.5);
+                timyON = false;
+            }
+            xPressed = true;
+        }
+        else if (!gamepad2.x) xPressed = false;
+
+        if (gamepad2.back && !backPressed) {
+            timy.setPosition(1);
+            backPressed = true;
+        }
+        else if (!gamepad2.back) backPressed = false;
+
         telemetry.addData("pid calc", slideyController.calculate(slidePos, target));
         telemetry.addData("pos", slidePos);
         telemetry.addData("pos2", backSlides.getCurrentPosition());
         telemetry.addData("target", target);
-        telemetry.addData("servo pos", drv4bR.getPosition());
+        telemetry.addData("extebd pos", drv4bR.getPosition());
+        telemetry.addData("vbr pos", neckR.getPosition());
+        telemetry.addData("timy", timy.getPosition() == 0.5 ? "STOPPED" : timy.getPosition() == 1 ? "REVERSE" : "INTAKING");
         telemetry.update();
     }
 }
