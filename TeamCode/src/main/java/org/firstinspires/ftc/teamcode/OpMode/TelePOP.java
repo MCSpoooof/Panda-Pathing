@@ -26,7 +26,7 @@ public class TelePOP extends OpMode {
 
     // slide PIDF
     public PIDController slideyController;
-    public static double p = 0.004, i = 0, d = 0;
+    public static double p = 0, i = 0, d = 0;
     public static double f = 0.1;
     public static int target = 0;
     private final double TICKS_PER_DEG = 103.8/360;
@@ -40,7 +40,7 @@ public class TelePOP extends OpMode {
         leftFront   = hardwareMap.get(DcMotorEx.class, "cm0");
         leftRear    = hardwareMap.get(DcMotorEx.class, "em1");
         rightRear   = hardwareMap.get(DcMotorEx.class, "em2");
-        rightFront  = hardwareMap.get(DcMotorEx.class, "cm1");
+        rightFront  = hardwareMap.get(DcMotorEx.class, "cm3");
         frontSlides = hardwareMap.get(DcMotorEx.class, "cm2");
         backSlides  = hardwareMap.get(DcMotorEx.class, "cm3");
 //        hangerL     = hardwareMap.get(DcMotorEx.class, "em2");
@@ -85,9 +85,9 @@ public class TelePOP extends OpMode {
         robot.setTeleOpMovementVectors(-gamepad1.left_stick_y, strafePow, -gamepad1.right_stick_x);
         robot.update();*/
         // classic mecanum drive
-        double drive  = gamepad1.left_stick_y;
-        double strafe = gamepad1.left_trigger != 0 ? -gamepad1.left_trigger : 0;
         double twist  = -gamepad1.right_stick_x;
+        double strafe = gamepad1.left_trigger != 0 ? -gamepad1.left_trigger : gamepad1.right_trigger != 0 ? gamepad1.right_trigger : 0;
+        double drive  = gamepad1.left_stick_y;
         double speed = 1.0;
         double[] speeds = {
                 (drive + strafe + twist),
@@ -118,13 +118,13 @@ public class TelePOP extends OpMode {
         frontSlides.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         frontSlides.setPower(1);
         if(gamepad2.left_stick_y != 0) {
-            if (-gamepad2.left_stick_y > 0 && target > -1000) // upper limit
+            if (-gamepad2.left_stick_y > 0 && target > -4900) // upper limit
                 target += 10 * gamepad2.left_stick_y;
             if (-gamepad2.left_stick_y < 0 && target < 0) // lower limit
                 target += 10 * gamepad2.left_stick_y;
         } else {
             if (gamepad2.dpad_up && !dUpPressed) {
-                target = -700; // top basket
+                target = -4900; // top basket
                 dUpPressed = true;
             } else if (!gamepad2.dpad_up) dUpPressed = false;
             if (gamepad2.dpad_down && !dDownPressed) {
@@ -164,13 +164,13 @@ public class TelePOP extends OpMode {
         drv4bL.setPosition(extendPosL);
 
         //v4b
-        if (gamepad2.a) {
+        if (gamepad2.b) {
             neckL.setPosition(0);
-            neckR.setPosition(1);
+            //neckR.setPosition(0.5);
         }
-        else if (gamepad2.b) {
-            neckL.setPosition(1);
-            neckR.setPosition(0);
+        else if (gamepad2.a) {
+            neckL.setPosition(0.32);
+            //neckR.setPosition(0.25);
         }
 
         //timmy
@@ -179,7 +179,7 @@ public class TelePOP extends OpMode {
                 timy.setPosition(0);
                 timyON = true;
             } else if(timyON){
-                timy.setPosition(0.5);
+                timy.setPosition(1);
                 timyON = false;
             }
             xPressed = true;
@@ -187,13 +187,13 @@ public class TelePOP extends OpMode {
         else if (!gamepad2.x) xPressed = false;
 
         if (gamepad2.back && !backPressed) {
-            timy.setPosition(1);
+            timy.setPosition(0.5);
             backPressed = true;
         }
         else if (!gamepad2.back) backPressed = false;
 
-        telemetry.addData("pid calc", slideyController.calculate(slidePos, target));
-        telemetry.addData("pos", slidePos);
+       // telemetry.addData("pid calc", slideyController.calculate(slidePos, target));
+        //telemetry.addData("pos", slidePos);
         telemetry.addData("pos2", backSlides.getCurrentPosition());
         telemetry.addData("target", target);
         telemetry.addData("extebd pos", drv4bR.getPosition());

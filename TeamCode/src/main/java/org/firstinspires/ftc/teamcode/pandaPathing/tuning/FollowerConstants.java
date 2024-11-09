@@ -25,7 +25,7 @@ public class FollowerConstants {
     // This section is for configuring your motors
     public static String leftFrontMotorName = "cm0";
     public static String leftRearMotorName = "em1";
-    public static String rightFrontMotorName = "cm1";
+    public static String rightFrontMotorName = "cm3";
     public static String rightRearMotorName = "em2";
 
     // This section is for setting the actual drive vector for the front left wheel, if the robot
