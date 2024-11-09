@@ -114,8 +114,9 @@ public class TelePOP extends OpMode {
         double power = pid + ff;
 
         // change slide target based on controller control
-        frontSlides.setPower(power);
-        backSlides.setPower(power);
+        frontSlides.setTargetPosition(target);
+        frontSlides.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        frontSlides.setPower(1);
         if(gamepad2.left_stick_y != 0) {
             if (-gamepad2.left_stick_y > 0 && target > -1000) // upper limit
                 target += 10 * gamepad2.left_stick_y;

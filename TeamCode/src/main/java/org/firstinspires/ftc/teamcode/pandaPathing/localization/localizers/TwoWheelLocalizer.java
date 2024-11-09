@@ -80,8 +80,8 @@ public class TwoWheelLocalizer extends Localizer {
      * @param setStartPose the Pose to start from
      */
     public TwoWheelLocalizer(HardwareMap map, Pose setStartPose) {
-        forwardEncoderPose = new Pose(136.675/25.4, 50.5/25.4, 0);
-        strafeEncoderPose = new Pose(-136.675/25.4, 50.5/25.4, Math.toRadians(90));
+        forwardEncoderPose = new Pose(-136.675/25.4, 50.5/25.4, 0);
+        strafeEncoderPose = new Pose(136.675/25.4, 50.5/25.4, Math.toRadians(90));
 
         hardwareMap = map;
 
@@ -90,8 +90,8 @@ public class TwoWheelLocalizer extends Localizer {
         imu.initialize(new IMU.Parameters(new RevHubOrientationOnRobot(RevHubOrientationOnRobot.LogoFacingDirection.UP, RevHubOrientationOnRobot.UsbFacingDirection.LEFT)));
 
         // TODO: replace these with your encoder ports
-        forwardEncoder = new Encoder(hardwareMap.get(DcMotorEx.class, "cm0"));
-        strafeEncoder = new Encoder(hardwareMap.get(DcMotorEx.class, "cm3"));
+        forwardEncoder = new Encoder(hardwareMap.get(DcMotorEx.class, "cm3"));
+        strafeEncoder = new Encoder(hardwareMap.get(DcMotorEx.class, "cm0"));
 
         // TODO: reverse any encoders necessary
         forwardEncoder.setDirection(Encoder.REVERSE);

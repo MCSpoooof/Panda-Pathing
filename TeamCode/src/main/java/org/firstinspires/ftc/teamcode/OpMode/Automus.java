@@ -25,7 +25,6 @@ public class Automus extends OpMode {
             motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
     }
     public void loop(){
-
         Point startPos = new Point(new Pose(0, 0, 0));
         Point endPos = new Point(new Pose(0, 20, 0));
         Path path1 = new Path(new BezierLine(startPos, endPos));
