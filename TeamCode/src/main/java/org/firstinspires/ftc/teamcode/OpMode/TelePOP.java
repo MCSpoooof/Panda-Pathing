@@ -13,7 +13,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 import java.util.*;
 
 @Config
-@TeleOp(name = "Telepepepop", group = "Drive")
+@TeleOp(name = "Telelel op", group = "Drive")
 public class TelePOP extends OpMode {
     //private Follower robot = new Follower(hardwareMap);
 
@@ -144,7 +144,7 @@ public class TelePOP extends OpMode {
                 extendPosL -= 0.01*gamepad2.right_stick_y;
             }
         } else {
-            if (gamepad2.right_bumper && !rbumpPressed) {
+            if (gamepad2.y && !rbumpPressed) {
                 if (extended){
                     extendPosR = 0;
                     extendPosL = 1;
@@ -156,7 +156,7 @@ public class TelePOP extends OpMode {
                     extended = true;
                 }
                 rbumpPressed = true;
-            } else if (!gamepad2.right_bumper) rbumpPressed = false;
+            } else if (!gamepad2.y) rbumpPressed = false;
         }
         drv4bR.resetDeviceConfigurationForOpMode();
         drv4bL.resetDeviceConfigurationForOpMode();
@@ -164,33 +164,24 @@ public class TelePOP extends OpMode {
         drv4bL.setPosition(extendPosL);
 
         //v4b
-        if (gamepad2.b) {
+        if (gamepad2.x) {
             neckL.setPosition(0);
             //neckR.setPosition(0.5);
         }
-        else if (gamepad2.a) {
+        else if (gamepad2.b) {
             neckL.setPosition(0.32);
             //neckR.setPosition(0.25);
         }
 
         //timmy
-        if (gamepad2.x && !xPressed) {
-            if(!timyON) {
-                timy.setPosition(0);
-                timyON = true;
-            } else if(timyON){
+        if (gamepad2.left_bumper) {
+            timy.setPosition(0);
+            } else if(gamepad2.right_bumper){
                 timy.setPosition(1);
-                timyON = false;
             }
-            xPressed = true;
-        }
-        else if (!gamepad2.x) xPressed = false;
-
-        if (gamepad2.back && !backPressed) {
+        if (gamepad2.back) {
             timy.setPosition(0.5);
-            backPressed = true;
         }
-        else if (!gamepad2.back) backPressed = false;
 
        // telemetry.addData("pid calc", slideyController.calculate(slidePos, target));
         //telemetry.addData("pos", slidePos);

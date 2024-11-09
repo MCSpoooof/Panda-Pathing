@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.OpMode;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
@@ -13,6 +14,7 @@ import org.firstinspires.ftc.teamcode.pandaPathing.pathGeneration.BezierLine;
 import org.firstinspires.ftc.teamcode.pandaPathing.pathGeneration.Path;
 import org.firstinspires.ftc.teamcode.pandaPathing.pathGeneration.Point;
 
+@Disabled
 @Autonomous(name = "Automus")
 public class Automus extends OpMode {
     private Follower robot;
