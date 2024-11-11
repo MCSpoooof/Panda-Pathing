@@ -32,7 +32,7 @@ public class TelePOP extends OpMode {
     private final double TICKS_PER_DEG = 103.8/360;
 
     boolean dUpPressed, dDownPressed, yPressed, aPressed, rbumpPressed, extended, backPressed, xPressed, bPressed, timyON;
-    double strafePow, extendPosR = 0, extendPosL = 1;
+    double strafePow, extendPosR = 0, extendPosL = 1, speed, mult;
 
     boolean slowmode = false;
 
@@ -88,18 +88,11 @@ public class TelePOP extends OpMode {
         robot.update();*/
         // classic mecanum drive
 
-        if(gamepad1.left_bumper){
+        if(gamepad1.left_bumper)
+            mult = 0.33;
+        if(gamepad1.right_bumper)
+            mult = 1;
 
-        }
-        double speed = 1.0;
-
-        if(gamepad1.left_bumper){
-            speed = 0.33;
-        }
-
-        else if(gamepad1.right_bumper){
-            speed = 1;
-        }
 
         double twist  = (-gamepad1.right_stick_x * speed);
         double strafe = (gamepad1.left_trigger != 0 ? gamepad1.left_trigger : gamepad1.right_trigger != 0 ? -gamepad1.right_trigger : 0 * speed);
@@ -147,6 +140,9 @@ public class TelePOP extends OpMode {
                 dDownPressed = true;
             } else if (!gamepad2.dpad_down) dDownPressed = false;
         }
+        if(frontSlides.getCurrentPosition() < -1000)
+            speed = -(double)800/frontSlides.getCurrentPosition();
+        else speed = mult;
 
         // extendys
         if(gamepad2.right_stick_y != 0) {
