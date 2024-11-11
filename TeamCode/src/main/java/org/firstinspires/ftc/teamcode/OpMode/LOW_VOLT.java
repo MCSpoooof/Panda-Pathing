@@ -4,11 +4,10 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 
-@Autonomous(name = "IM TIRED", group = "Stupid")
-public class CacheAuto extends LinearOpMode {
+@Autonomous(name = "12V", group = "Stupid")
+public class LOW_VOLT extends LinearOpMode {
 
     // Declare motors
     private DcMotor leftFront;
@@ -19,6 +18,8 @@ public class CacheAuto extends LinearOpMode {
 
     private Servo timy;
     private Servo neckL;
+    private Servo drv4bL;
+    private Servo drv4bR;
 
     @Override
     public void runOpMode() {
@@ -32,6 +33,8 @@ public class CacheAuto extends LinearOpMode {
 
         timy = hardwareMap.get(Servo.class, "es2");
         neckL = hardwareMap.get(Servo.class, "cs2");
+        drv4bL = hardwareMap.get(Servo.class, "cs0");
+        drv4bR = hardwareMap.get(Servo.class, "es0");
 
         // Set all motors to use power-based control (without encoders)
         leftFront.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
@@ -58,7 +61,7 @@ public class CacheAuto extends LinearOpMode {
 
         timy.setPosition(0);
 
-        slides(6200);
+        slides(6500);
 
         sleep(2000);
 
@@ -66,11 +69,14 @@ public class CacheAuto extends LinearOpMode {
 
         sleep(500);
 
+        drv4bR.setPosition(0.654);
+        drv4bL.setPosition(0.305);
+
         // Move forward by setting power
-        moveForward(0.3); // Adjust power level here
+        moveForward(0.2); // Adjust power level here
 
         // Duration for forward movement (e.g., 2 seconds)
-        sleep(100);
+        sleep(2350);
 
         timy.setPosition(1);
 
@@ -78,11 +84,18 @@ public class CacheAuto extends LinearOpMode {
 
         moveBackward(0.2);
 
+        drv4bR.setPosition(0);
+        drv4bL.setPosition(1);
+
         sleep(1000);
 
         slides(0);
 
-        sleep(3000);
+        sleep(1000);
+
+        moveBackward(0.1);
+
+        sleep(2000);
 
         // Stop all motors
         stopMoving();
@@ -107,6 +120,13 @@ public class CacheAuto extends LinearOpMode {
         rightFront.setPower(power);
         leftRear.setPower(-power);
         rightRear.setPower(power);
+    }
+
+    private void turnRight(double power) {
+        leftFront.setPower(power);
+        rightFront.setPower(-power);
+        leftRear.setPower(power);
+        rightRear.setPower(-power);
     }
 
     private void slides(int positin) {

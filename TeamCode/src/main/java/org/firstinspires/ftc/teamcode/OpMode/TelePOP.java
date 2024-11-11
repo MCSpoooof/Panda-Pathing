@@ -34,6 +34,8 @@ public class TelePOP extends OpMode {
     boolean dUpPressed, dDownPressed, yPressed, aPressed, rbumpPressed, extended, backPressed, xPressed, bPressed, timyON;
     double strafePow, extendPosR = 0, extendPosL = 1;
 
+    boolean slowmode = false;
+
     public void init() {
         // motor configs
         allMotors.addAll(tracking);
@@ -85,10 +87,23 @@ public class TelePOP extends OpMode {
         robot.setTeleOpMovementVectors(-gamepad1.left_stick_y, strafePow, -gamepad1.right_stick_x);
         robot.update();*/
         // classic mecanum drive
-        double twist  = -gamepad1.right_stick_x;
-        double strafe = gamepad1.left_trigger != 0 ? -gamepad1.left_trigger : gamepad1.right_trigger != 0 ? gamepad1.right_trigger : 0;
-        double drive  = gamepad1.left_stick_y;
+
+        if(gamepad1.left_bumper){
+
+        }
         double speed = 1.0;
+
+        if(gamepad1.left_bumper){
+            speed = 0.33;
+        }
+
+        else if(gamepad1.right_bumper){
+            speed = 1;
+        }
+
+        double twist  = (-gamepad1.right_stick_x * speed);
+        double strafe = (gamepad1.left_trigger != 0 ? gamepad1.left_trigger : gamepad1.right_trigger != 0 ? -gamepad1.right_trigger : 0 * speed);
+        double drive  = (gamepad1.left_stick_y * speed);
         double[] speeds = {
                 (drive + strafe + twist),
                 (drive - strafe - twist),
@@ -118,13 +133,13 @@ public class TelePOP extends OpMode {
         frontSlides.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         frontSlides.setPower(1);
         if(gamepad2.left_stick_y != 0) {
-            if (-gamepad2.left_stick_y > 0 && target > -4900) // upper limit
+            if (-gamepad2.left_stick_y > 0 && target > -6300) // upper limit
                 target += 10 * gamepad2.left_stick_y;
             if (-gamepad2.left_stick_y < 0 && target < 0) // lower limit
                 target += 10 * gamepad2.left_stick_y;
         } else {
             if (gamepad2.dpad_up && !dUpPressed) {
-                target = -4900; // top basket
+                target = -6300; // top basket
                 dUpPressed = true;
             } else if (!gamepad2.dpad_up) dUpPressed = false;
             if (gamepad2.dpad_down && !dDownPressed) {
@@ -165,11 +180,11 @@ public class TelePOP extends OpMode {
 
         //v4b
         if (gamepad2.x) {
-            neckL.setPosition(0);
+            neckL.setPosition(0.6);
             //neckR.setPosition(0.5);
         }
         else if (gamepad2.b) {
-            neckL.setPosition(0.32);
+            neckL.setPosition(0);
             //neckR.setPosition(0.25);
         }
 
