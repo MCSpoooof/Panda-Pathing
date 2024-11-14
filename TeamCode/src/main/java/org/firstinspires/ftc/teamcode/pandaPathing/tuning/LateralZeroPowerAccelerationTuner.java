@@ -31,7 +31,7 @@ import java.util.List;
  * them to zero power. The deceleration, or negative acceleration, is then measured until the robot
  * stops. The accelerations across the entire time the robot is slowing down is then averaged and
  * that number is then printed. This is used to determine how the robot will decelerate in the
- * forward direction when power is cut, making the estimations used in the calculations for the
+ * rightward direction when power is cut, making the estimations used in the calculations for the
  * drive Vector more accurate and giving better braking at the end of Paths.
  * You can adjust the max velocity the robot will hit on FTC Dashboard: 192/168/43/1:8080/dash
  *
