@@ -59,8 +59,8 @@ public class TwoWheelLocalizer extends Localizer {
     private double previousIMUOrientation;
     private double deltaRadians;
     private double totalHeading;
-    public static double FORWARD_TICKS_TO_INCHES = 8192 * 1.37795 * 2 * Math.PI * 0.5008239963;
-    public static double STRAFE_TICKS_TO_INCHES = 8192 * 1.37795 * 2 * Math.PI * 0.5018874659;
+    public static double FORWARD_TICKS_TO_INCHES = 0.002;
+    public static double STRAFE_TICKS_TO_INCHES = -0.003;
 
     /**
      * This creates a new TwoWheelLocalizer from a HardwareMap, with a starting Pose at (0,0)
@@ -80,22 +80,22 @@ public class TwoWheelLocalizer extends Localizer {
      * @param setStartPose the Pose to start from
      */
     public TwoWheelLocalizer(HardwareMap map, Pose setStartPose) {
-        forwardEncoderPose = new Pose(-136.675/25.4, 50.5/25.4, 0);
-        strafeEncoderPose = new Pose(136.675/25.4, 50.5/25.4, Math.toRadians(90));
+        forwardEncoderPose = new Pose(-50.5/25.4, -136.675/25.4, 0);
+        strafeEncoderPose = new Pose(-50.5/25.4, 136.675/25.4, Math.toRadians(90));
 
         hardwareMap = map;
 
         imu = hardwareMap.get(IMU.class, "imu");
         // TODO: replace this with your IMU's orientation
-        imu.initialize(new IMU.Parameters(new RevHubOrientationOnRobot(RevHubOrientationOnRobot.LogoFacingDirection.UP, RevHubOrientationOnRobot.UsbFacingDirection.LEFT)));
+        imu.initialize(new IMU.Parameters(new RevHubOrientationOnRobot(RevHubOrientationOnRobot.LogoFacingDirection.UP, RevHubOrientationOnRobot.UsbFacingDirection.BACKWARD)));
 
         // TODO: replace these with your encoder ports
-        forwardEncoder = new Encoder(hardwareMap.get(DcMotorEx.class, "cm3"));
-        strafeEncoder = new Encoder(hardwareMap.get(DcMotorEx.class, "cm0"));
+        forwardEncoder = new Encoder(hardwareMap.get(DcMotorEx.class, "cm0"));
+        strafeEncoder = new Encoder(hardwareMap.get(DcMotorEx.class, "cm3"));
 
         // TODO: reverse any encoders necessary
         forwardEncoder.setDirection(Encoder.REVERSE);
-        strafeEncoder.setDirection(Encoder.FORWARD);
+        strafeEncoder.setDirection(Encoder.REVERSE);
 
         setStartPose(setStartPose);
         timer = new NanoTimer();
