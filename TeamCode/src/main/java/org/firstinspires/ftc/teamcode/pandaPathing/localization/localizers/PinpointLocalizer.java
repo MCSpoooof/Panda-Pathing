@@ -66,7 +66,7 @@ public class PinpointLocalizer extends Localizer {
      */
     public PinpointLocalizer(HardwareMap map, Pose setStartPose){
         hardwareMap = map;
-        odo = hardwareMap.get(GoBildaPinpointDriver.class,"imu");
+        odo = hardwareMap.get(GoBildaPinpointDriver.class,"cIIC0");
 
         //This uses mm, to use inches divide these numbers by 25.4
         odo.setOffsets(50.5, 136.675);

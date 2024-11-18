@@ -25,7 +25,7 @@ public class FollowerConstants {
     // This section is for configuring your motors
     public static String leftFrontMotorName = "cm0";
     public static String leftRearMotorName = "em1";
-    public static String rightFrontMotorName = "cm3";
+    public static String rightFrontMotorName = "cm1";
     public static String rightRearMotorName = "em2";
 
     // This section is for setting the actual drive vector for the front left wheel, if the robot
@@ -58,8 +58,8 @@ public class FollowerConstants {
     public static PIDFSet headingPIDFCoefficients = new PIDFSet(
             1,
             0,
-            0.009,
-            0);
+            0.08,
+            0.005);
 
     // Feed forward constant added on to the heading PIDF
     public static double headingPIDFFeedForward = 0.01;
@@ -67,11 +67,11 @@ public class FollowerConstants {
 
     // Drive PIDF coefficients
     public static CustomFilteredPIDFCoefficients drivePIDFCoefficients = new CustomFilteredPIDFCoefficients(
-            20,
+            0.0078,
             0,
-            0.1,
-            0.6,
-            10);
+            0.00000005,
+            1,
+            0.019);
 
     // Feed forward constant added on to the drive PIDF
     public static double drivePIDFFeedForward = 0.01;
@@ -83,10 +83,10 @@ public class FollowerConstants {
 
 
     // Mass of robot in kilograms
-    public static double mass = 11.2;
+    public static double mass = 11.2 + 0.387 + 0.387;
 
     // Centripetal force to power scaling
-    public static double centripetalScaling = 0.0005;
+    public static double centripetalScaling = 0.0006;
 
 
     // Acceleration of the drivetrain when power is cut in inches/second^2 (should be negative)
@@ -186,9 +186,9 @@ public class FollowerConstants {
 
     // Secondary heading error PIDF coefficients
     public static PIDFSet secondaryHeadingPIDFCoefficients = new PIDFSet(
-            5,
+            1,
             0,
-            0.08,
+            0,
             0);
 
     // Feed forward constant added on to the secondary heading PIDF
@@ -202,8 +202,8 @@ public class FollowerConstants {
     public static CustomFilteredPIDFCoefficients secondaryDrivePIDFCoefficients = new CustomFilteredPIDFCoefficients(
             0.02,
             0,
-            0.000005,
-            0.6,
+            0.000003,
+            1,
             0);
 
     // Feed forward constant added on to the secondary drive PIDF

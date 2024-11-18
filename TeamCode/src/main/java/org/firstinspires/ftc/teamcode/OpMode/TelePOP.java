@@ -9,6 +9,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.hardware.ServoImplEx;
 
 import java.util.*;
 
@@ -42,11 +43,11 @@ public class TelePOP extends OpMode {
         leftFront   = hardwareMap.get(DcMotorEx.class, "cm0");
         leftRear    = hardwareMap.get(DcMotorEx.class, "em1");
         rightRear   = hardwareMap.get(DcMotorEx.class, "em2");
-        rightFront  = hardwareMap.get(DcMotorEx.class, "cm3");
+        rightFront  = hardwareMap.get(DcMotorEx.class, "cm1");
         frontSlides = hardwareMap.get(DcMotorEx.class, "cm2");
         backSlides  = hardwareMap.get(DcMotorEx.class, "cm3");
-//        hangerL     = hardwareMap.get(DcMotorEx.class, "em2");
-//        hangerR     = hardwareMap.get(DcMotorEx.class, "em2");
+//        hangerL     = hardwareMap.get(DcMotorEx.class, "em0");
+//        hangerR     = hardwareMap.get(DcMotorEx.class, "em3");
         leftFront .setDirection(DcMotorEx.Direction.FORWARD);
         rightFront.setDirection(DcMotorEx.Direction.REVERSE);
         leftRear  .setDirection(DcMotorEx.Direction.FORWARD);
@@ -63,11 +64,11 @@ public class TelePOP extends OpMode {
         frontSlides.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         // servo configs
-        drv4bL = hardwareMap.get(Servo.class, "cs0");
-        drv4bR = hardwareMap.get(Servo.class, "es0");
-        timy   = hardwareMap.get(Servo.class, "es2");
-        neckL = hardwareMap.get(Servo.class, "cs2");
-        neckR = hardwareMap.get(Servo.class, "cs4");
+        drv4bL = (ServoImplEx)hardwareMap.get(Servo.class, "cs0");
+        drv4bR = (ServoImplEx)hardwareMap.get(Servo.class, "es0");
+        timy   = (ServoImplEx)hardwareMap.get(Servo.class, "es2");
+        neckL  = (ServoImplEx)hardwareMap.get(Servo.class, "cs2");
+        neckR  = (ServoImplEx)hardwareMap.get(Servo.class, "cs4");
 
         // pid configs
         slideyController = new PIDController(p, i, d);
