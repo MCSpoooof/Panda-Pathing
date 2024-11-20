@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.pandaPathing.pathGeneration;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 /**
  * This is the PathChain class. This class handles chaining together multiple Paths into a larger
@@ -27,9 +28,7 @@ public class PathChain {
      * @param paths the specified Paths.
      */
     public PathChain(Path... paths) {
-        for (Path path : paths) {
-            pathChain.add(path);
-        }
+        pathChain.addAll(Arrays.asList(paths));
     }
 
     /**
@@ -53,7 +52,7 @@ public class PathChain {
     public Path getPath(int index) {
         return pathChain.get(index);
     }
-
+    public void addPath(Path path) { pathChain.add(path);}
     /**
      * This returns the size of the PathChain.
      *

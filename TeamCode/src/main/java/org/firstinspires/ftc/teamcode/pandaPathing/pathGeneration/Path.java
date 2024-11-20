@@ -84,11 +84,12 @@ public class Path {
      * @param endHeading The end of the linear heading interpolation.
      *                   This will be reached at the end of the Path if no end time is specified.
      */
-    public void setLinearHeadingInterpolation(double startHeading, double endHeading) {
+    public Path setLinearHeadingInterpolation(double startHeading, double endHeading) {
         linearInterpolationEndTime = 1;
         isTangentHeadingInterpolation = false;
         this.startHeading = startHeading;
         this.endHeading = endHeading;
+        return this;
     }
 
     /**
