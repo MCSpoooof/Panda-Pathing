@@ -26,8 +26,8 @@ import java.util.ArrayList;
 public class Automus extends LinearOpMode {
     private Follower robot;
     private PathChain mainPath = new PathChain();
-    private int lastX = 0;
-    private int lastY = 0;
+    private double lastX = 0;
+    private double lastY = 0;
     private int lastH = 0;
 
     public void initi() {
@@ -36,10 +36,26 @@ public class Automus extends LinearOpMode {
         for (DcMotorEx motor : robot.motors)
             motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
-        addPath(28, 0);
-        addPath(22, -10);
-        addPath(40, -15);
-        addPath(10, -15);
+        addPath(24, 0);
+        addPath(21, -30);
+        addPath(50, -30);
+        addPath(50,-40);
+        addPath(15, -40);
+        addPath(50,-40);
+        addPath(50,-50);
+        addPath(15,-50);
+        addPath(50,-50);
+        addPath(50,-55.7);
+        addPath(17,-55.7);
+        addPath(6,-40);
+        addPath(30, 5);
+        addPath(6,-36);
+        addPath(30, 5);
+        addPath(7,-36);
+        addPath(30, 5);
+        addPath(7,-36);
+        addPath(30, 5);
+        addPath(8,-36);
         robot.followPath(mainPath);
     }
     public void runOpMode(){
@@ -50,7 +66,7 @@ public class Automus extends LinearOpMode {
         }
     }
 
-    public void addPath(int targetX, int targetY, int targetH){
+    public void addPath(double targetX, double targetY, int targetH){
         Point startPoint = new Point(lastX, lastY, Point.CARTESIAN);
         Point endPoint = new Point(targetX, targetY, Point.CARTESIAN);
         Path path = new Path(new BezierLine(startPoint, endPoint));
@@ -63,7 +79,7 @@ public class Automus extends LinearOpMode {
         lastY = targetY;
         mainPath.addPath(path);
     }
-    public void addPath(int targetX, int targetY){
+    public void addPath(double targetX, double targetY){
         addPath(targetX, targetY, -69);
     }
 }
