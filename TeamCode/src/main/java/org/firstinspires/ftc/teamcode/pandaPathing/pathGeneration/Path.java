@@ -227,6 +227,7 @@ public class Path {
     public double getCurvature(double t) {
         return curve.getCurvature(t);
     }
+    public BezierCurve getCurve(){return curve;}
 
     /**
      * This returns the curvature of the BezierCurve at the closest Point.

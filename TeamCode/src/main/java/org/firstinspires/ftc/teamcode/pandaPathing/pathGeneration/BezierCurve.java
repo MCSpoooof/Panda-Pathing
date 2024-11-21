@@ -82,6 +82,9 @@ public class BezierCurve {
         }
         initialize();
     }
+    public void addPoint(Point p){
+        controlPoints.add(p);
+    }
 
     /**
      * This handles most of the initialization of the BezierCurve that is called from the constructor.

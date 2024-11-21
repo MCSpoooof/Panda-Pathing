@@ -8,6 +8,7 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.ServoImplEx;
 
@@ -27,8 +28,8 @@ public class TelePOP extends OpMode {
 
     // slide PIDF
     public PIDController slideyController;
-    public static double p = 0, i = 0, d = 0;
-    public static double f = 0.1;
+    public static double p = 0.001, i = 0, d = 0, kg_ = 0, kv_ = 0, ks_ = 0;
+    public static double f = 0.001;
     public static int target = 0;
     private final double TICKS_PER_DEG = 103.8/360;
 
@@ -59,6 +60,8 @@ public class TelePOP extends OpMode {
         rightRear .setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         frontSlides.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         backSlides.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        backSlides.setDirection(DcMotorSimple.Direction.REVERSE);
+        frontSlides.setDirection(DcMotorSimple.Direction.REVERSE);
 
         frontSlides.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         frontSlides.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
@@ -120,20 +123,25 @@ public class TelePOP extends OpMode {
         int slidePos = frontSlides.getCurrentPosition();
         double pid = slideyController.calculate(slidePos, target);
         double ff = Math.cos(Math.toRadians(target / TICKS_PER_DEG)) * f;
-        double power = pid + ff;
+        double velocity = 0;
+        double acceleration = 0;
+        double elevator = ks_ * Math.signum(velocity) + kg_ + kv_ * velocity + 0 * acceleration;
+        double power = (pid + ff)*elevator;
 
         // change slide target based on controller control
-        frontSlides.setTargetPosition(target);
-        frontSlides.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        frontSlides.setPower(1);
+        //frontSlides.setTargetPosition(target);
+        //frontSlides.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        frontSlides.setPower(power);
+        backSlides.setPower(power);
+
         if(gamepad2.left_stick_y != 0) {
-            if (-gamepad2.left_stick_y > 0 && target > -6300) // upper limit
-                target += 10 * gamepad2.left_stick_y;
-            if (-gamepad2.left_stick_y < 0 && target < 0) // lower limit
-                target += 10 * gamepad2.left_stick_y;
+            if (-gamepad2.left_stick_y > 0 && target < 6300) // upper limit
+                target += 10 * -gamepad2.left_stick_y;
+            if (-gamepad2.left_stick_y < 0 && target > 0) // lower limit
+                target += 10 * -gamepad2.left_stick_y;
         } else {
             if (gamepad2.dpad_up && !dUpPressed) {
-                target = -6300; // top basket
+                target = 6300; // top basket
                 dUpPressed = true;
             } else if (!gamepad2.dpad_up) dUpPressed = false;
             if (gamepad2.dpad_down && !dDownPressed) {
@@ -141,8 +149,8 @@ public class TelePOP extends OpMode {
                 dDownPressed = true;
             } else if (!gamepad2.dpad_down) dDownPressed = false;
         }
-        if(frontSlides.getCurrentPosition() < -1000)
-            speed = -(double)800/frontSlides.getCurrentPosition();
+        if(frontSlides.getCurrentPosition() > 1000)
+            speed = (double)800/frontSlides.getCurrentPosition();
         else speed = mult;
 
         // extendys
@@ -195,9 +203,9 @@ public class TelePOP extends OpMode {
             timy.setPosition(0.5);
         }
 
-       // telemetry.addData("pid calc", slideyController.calculate(slidePos, target));
-        //telemetry.addData("pos", slidePos);
-        telemetry.addData("pos2", backSlides.getCurrentPosition());
+        telemetry.addData("pid calc", pid + ff);
+        telemetry.addData("pos", slidePos);
+        telemetry.addData("ff", ff);
         telemetry.addData("target", target);
         telemetry.addData("extebd pos", drv4bR.getPosition());
         telemetry.addData("vbr pos", neckR.getPosition());
