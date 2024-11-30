@@ -25,6 +25,8 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.hardware.ServoImplEx;
 import com.qualcomm.robotcore.hardware.configuration.typecontainers.MotorConfigurationType;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
@@ -62,10 +64,12 @@ import java.util.List;
 public class Follower {
     private HardwareMap hardwareMap;
 
-    private DcMotorEx leftFront;
-    private DcMotorEx leftRear;
-    private DcMotorEx rightFront;
-    private DcMotorEx rightRear;
+    public DcMotorEx leftFront;
+    public DcMotorEx leftRear;
+    public DcMotorEx rightFront;
+    public DcMotorEx rightRear;
+    public DcMotorEx frontSlides, backSlides, hangerL, hangerR;
+    public Servo drv4bL, drv4bR, timmy, neck, wrist;
     public List<DcMotorEx> motors;
 
     private DriveVectorScaler driveVectorScaler;
@@ -166,10 +170,31 @@ public class Follower {
         leftRear = hardwareMap.get(DcMotorEx.class, leftRearMotorName);
         rightRear = hardwareMap.get(DcMotorEx.class, rightRearMotorName);
         rightFront = hardwareMap.get(DcMotorEx.class, rightFrontMotorName);
+        frontSlides = hardwareMap.get(DcMotorEx.class, "cm2");
+        backSlides  = hardwareMap.get(DcMotorEx.class, "cm3");
+        hangerL     = hardwareMap.get(DcMotorEx.class, "em0");
+        hangerR     = hardwareMap.get(DcMotorEx.class, "em3");
 
         // TODO: Make sure that this is the direction your motors need to be reversed in.
         leftFront.setDirection(DcMotorSimple.Direction.REVERSE);
         leftRear.setDirection(DcMotorSimple.Direction.REVERSE);
+        backSlides.setDirection(DcMotorSimple.Direction.REVERSE);
+        frontSlides.setDirection(DcMotorSimple.Direction.REVERSE);
+        backSlides.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+
+        frontSlides.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        frontSlides.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        hangerL.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        hangerL.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        hangerR.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        hangerR.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+        // servo configs
+        drv4bL = (ServoImplEx)hardwareMap.get(Servo.class, "cs0"); // 0.5 --> 0 extend
+        drv4bR = (ServoImplEx)hardwareMap.get(Servo.class, "es0"); // 0.5 --> 1 extend
+        timmy  = (ServoImplEx)hardwareMap.get(Servo.class, "es2"); // 0 --> 0.339 closed
+        wrist  = (ServoImplEx)hardwareMap.get(Servo.class, "cs2"); // 0.228 --> 1 out
+        neck   = (ServoImplEx)hardwareMap.get(Servo.class, "cs4"); // 0.08 --> 0.873 out**
 
         motors = Arrays.asList(leftFront, leftRear, rightFront, rightRear);
 
@@ -180,7 +205,7 @@ public class Follower {
         }
 
         for (DcMotorEx motor : motors) {
-            motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+            motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         }
 
         dashboardPoseTracker = new DashboardPoseTracker(poseUpdater);

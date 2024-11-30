@@ -22,7 +22,7 @@ public class BezierCurve {
     private ArrayList<BezierCurveCoefficients> pointCoefficients = new ArrayList<>();
 
     // This contains the control points for the Bezier curve
-    private ArrayList<Point> controlPoints = new ArrayList<>();
+    public ArrayList<Point> controlPoints = new ArrayList<>();
 
     private Vector endTangent = new Vector();
 
@@ -80,7 +80,7 @@ public class BezierCurve {
                 e.printStackTrace();
             }
         }
-        initialize();
+        //initialize();
     }
     public void addPoint(Point p){
         controlPoints.add(p);

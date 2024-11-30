@@ -8,70 +8,32 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
-import com.qualcomm.robotcore.hardware.Servo;
-import com.qualcomm.robotcore.hardware.ServoImplEx;
 
-import java.util.*;
+import org.firstinspires.ftc.teamcode.pandaPathing.follower.Follower;
 
 @Config
 @TeleOp(name = "Telelel op", group = "Drive")
 public class TelePOP extends OpMode {
     //private Follower robot = new Follower(hardwareMap);
-
-    // hardware definitions
-    public DcMotorEx leftFront, leftRear, rightFront, rightRear, frontSlides, backSlides;
-    public List<DcMotorEx> tracking    = new ArrayList<DcMotorEx>(Arrays.asList(leftFront  , leftRear  , rightFront, rightRear));
-    public List<DcMotorEx> nonTracking = new ArrayList<DcMotorEx>(Arrays.asList(frontSlides, backSlides));
-    public List<DcMotorEx> allMotors   = new ArrayList<DcMotorEx>(nonTracking);
-    public Servo drv4bL, drv4bR, timy, neckR, neckL;
+    private Follower robot;
 
     // slide PIDF
     public PIDController slideyController;
-    public static double p = 0.001, i = 0, d = 0, kg_ = 0, kv_ = 0, ks_ = 0;
+    public static double p = 0.001, i = 0, d = 0, kg_ = 0.1;
     public static double f = 0.001;
-    public static int target = 0;
+    public int target = 0;
     private final double TICKS_PER_DEG = 103.8/360;
 
-    boolean dUpPressed, dDownPressed, yPressed, aPressed, rbumpPressed, extended, backPressed, xPressed, bPressed, timyON;
-    double strafePow, extendPosR = 0, extendPosL = 1, speed, mult;
+    boolean dUpPressed, dDownPressed, yPressed, aPressed, rbumpPressed, extended = false, backPressed, xPressed, bPressed, clawOpen, depositing = false, grabbing = false, deposited = false, extending = false;
+    double strafePow, extendPosR = 0.5, extendPosL = 0.5, speed, mult = 1, depositTimer = 0, grabbingTimer = 0, extendTimer = 0, neckPos = 0.3;
 
     boolean slowmode = false;
 
     public void init() {
-        // motor configs
-        allMotors.addAll(tracking);
-        leftFront   = hardwareMap.get(DcMotorEx.class, "cm0");
-        leftRear    = hardwareMap.get(DcMotorEx.class, "em1");
-        rightRear   = hardwareMap.get(DcMotorEx.class, "em2");
-        rightFront  = hardwareMap.get(DcMotorEx.class, "cm1");
-        frontSlides = hardwareMap.get(DcMotorEx.class, "cm2");
-        backSlides  = hardwareMap.get(DcMotorEx.class, "cm3");
-//        hangerL     = hardwareMap.get(DcMotorEx.class, "em0");
-//        hangerR     = hardwareMap.get(DcMotorEx.class, "em3");
-        leftFront .setDirection(DcMotorEx.Direction.FORWARD);
-        rightFront.setDirection(DcMotorEx.Direction.REVERSE);
-        leftRear  .setDirection(DcMotorEx.Direction.FORWARD);
-        rightRear .setDirection(DcMotorEx.Direction.REVERSE);
-
-        leftFront .setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        rightFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        leftRear  .setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        rightRear .setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        frontSlides.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        backSlides.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        backSlides.setDirection(DcMotorSimple.Direction.REVERSE);
-        frontSlides.setDirection(DcMotorSimple.Direction.REVERSE);
-
-        frontSlides.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        frontSlides.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-
-        // servo configs
-        drv4bL = (ServoImplEx)hardwareMap.get(Servo.class, "cs0");
-        drv4bR = (ServoImplEx)hardwareMap.get(Servo.class, "es0");
-        timy   = (ServoImplEx)hardwareMap.get(Servo.class, "es2");
-        neckL  = (ServoImplEx)hardwareMap.get(Servo.class, "cs2");
-        neckR  = (ServoImplEx)hardwareMap.get(Servo.class, "cs4");
+        robot = new Follower(hardwareMap);
+        robot.initialize();
+        for (DcMotorEx motor : robot.motors)
+            motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
         // pid configs
         slideyController = new PIDController(p, i, d);
@@ -80,8 +42,11 @@ public class TelePOP extends OpMode {
         //robot.startTeleopDrive();
         telemetry = new MultipleTelemetry(this.telemetry, FtcDashboard.getInstance().getTelemetry());
 
-        drv4bL.setPosition(1);
-        drv4bR.setPosition(0);
+        robot.neck.setPosition(0.3);
+        robot.wrist.setPosition(1);
+        robot.timmy.setPosition(0.3);
+        robot.drv4bL.setPosition(0.5);
+        robot.drv4bR.setPosition(0.5);
     }
 
     public void loop(){
@@ -98,9 +63,9 @@ public class TelePOP extends OpMode {
             mult = 1;
 
 
-        double twist  = (-gamepad1.right_stick_x * speed);
-        double strafe = (gamepad1.left_trigger != 0 ? gamepad1.left_trigger : gamepad1.right_trigger != 0 ? -gamepad1.right_trigger : 0 * speed);
-        double drive  = (gamepad1.left_stick_y * speed);
+        double twist  = speed*(gamepad1.right_stick_x);
+        double strafe = speed*(gamepad1.left_trigger != 0 ? gamepad1.left_trigger : gamepad1.right_trigger != 0 ? -gamepad1.right_trigger : 0 * speed);
+        double drive  = speed*(-gamepad1.left_stick_y);
         double[] speeds = {
                 (drive + strafe + twist),
                 (drive - strafe - twist),
@@ -113,26 +78,22 @@ public class TelePOP extends OpMode {
         if (max > 1)
             for (int i = 0; i < speeds.length; i++) speeds[i] /= max;
 
-        leftFront.setPower(speeds[0]);
-        rightFront.setPower(speeds[1]);
-        leftRear.setPower(speeds[2]);
-        rightRear.setPower(speeds[3]);
+        robot.leftFront.setPower(speeds[0]);
+        robot.rightFront.setPower(speeds[1]);
+        robot.leftRear.setPower(speeds[2]);
+        robot.rightRear.setPower(speeds[3]);
 
         // calculate the slide power using pid
         slideyController.setPID(p, i, d);
-        int slidePos = frontSlides.getCurrentPosition();
+        int slidePos = robot.frontSlides.getCurrentPosition();
         double pid = slideyController.calculate(slidePos, target);
         double ff = Math.cos(Math.toRadians(target / TICKS_PER_DEG)) * f;
-        double velocity = 0;
-        double acceleration = 0;
-        double elevator = ks_ * Math.signum(velocity) + kg_ + kv_ * velocity + 0 * acceleration;
+        double elevator = kg_ * Math.signum(robot.frontSlides.getCurrentPosition() - target);
         double power = (pid + ff)*elevator;
 
         // change slide target based on controller control
-        //frontSlides.setTargetPosition(target);
-        //frontSlides.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        frontSlides.setPower(power);
-        backSlides.setPower(power);
+        robot.frontSlides.setPower(power);
+        robot.backSlides.setPower(power);
 
         if(gamepad2.left_stick_y != 0) {
             if (-gamepad2.left_stick_y > 0 && target < 6300) // upper limit
@@ -149,67 +110,156 @@ public class TelePOP extends OpMode {
                 dDownPressed = true;
             } else if (!gamepad2.dpad_down) dDownPressed = false;
         }
-        if(frontSlides.getCurrentPosition() > 1000)
-            speed = (double)800/frontSlides.getCurrentPosition();
+        if(target <= 0) target = 0; // reset position if out of bounds
+        if(target >= 6300) target = 6300;
+        if(robot.frontSlides.getCurrentPosition() > 1000)
+            speed = (double)800/robot.frontSlides.getCurrentPosition();
+        else if(extendPosR >= 0.9)
+            speed = 0.5;
         else speed = mult;
 
         // extendys
         if(gamepad2.right_stick_y != 0) {
-            if (gamepad2.right_stick_y > 0 && drv4bR.getPosition() < 0.654) { // upper limit
-                extendPosR += 0.01*gamepad2.right_stick_y;
-                extendPosL -= 0.01*gamepad2.right_stick_y;
+            if (-gamepad2.right_stick_y > 0 && robot.drv4bR.getPosition() < 1) { // upper limit
+                extendPosR += 0.01*-gamepad2.right_stick_y;
+                extendPosL -= 0.01*-gamepad2.right_stick_y;
+                neckPos += 0.01*-gamepad2.right_stick_y;
             }
-            if (gamepad2.right_stick_y < 0 && drv4bR.getPosition() > 0) { // lower limit
-                extendPosR += 0.01*gamepad2.right_stick_y;
-                extendPosL -= 0.01*gamepad2.right_stick_y;
+            if (-gamepad2.right_stick_y < 0 && robot.drv4bR.getPosition() > 0.5) { // lower limit
+                extendPosR += 0.01*-gamepad2.right_stick_y;
+                extendPosL -= 0.01*-gamepad2.right_stick_y;
+                neckPos += 0.01*-gamepad2.right_stick_y;
             }
         } else {
-            if (gamepad2.y && !rbumpPressed) {
-                if (extended){
-                    extendPosR = 0;
-                    extendPosL = 1;
-                    extended = false;
-                }
-                else {
-                    extendPosR = 0.654;
-                    extendPosL = 0.305;
+            if (gamepad2.a && !aPressed) {
+                if (!extended){
+                    //extend --> sequence if extending
+                    neckPos = 0.8;
+                    robot.timmy.setPosition(0.3);
+                    extending = true;
+                    extendPosR = 1;
+                    extendPosL = 0;
                     extended = true;
                 }
-                rbumpPressed = true;
-            } else if (!gamepad2.y) rbumpPressed = false;
+                else {
+                    //retract --> sequence if grabbing
+                    grabbing = true;
+                    neckPos = 0.93;
+                    extended = false;
+                }
+                aPressed = true;
+            } else if (!gamepad2.a) aPressed = false;
         }
-        drv4bR.resetDeviceConfigurationForOpMode();
-        drv4bL.resetDeviceConfigurationForOpMode();
-        drv4bR.setPosition(extendPosR);
-        drv4bL.setPosition(extendPosL);
+        robot.drv4bR.resetDeviceConfigurationForOpMode();
+        robot.drv4bL.resetDeviceConfigurationForOpMode();
+        robot.drv4bR.setPosition(extendPosR);
+        robot.drv4bL.setPosition(extendPosL);
+        robot.neck.setPosition(neckPos);
 
-        //v4b
-        if (gamepad2.x) {
-            neckL.setPosition(0.6);
-            //neckR.setPosition(0.5);
+        //claw extend sequence
+        if(extending) extendTimer++;
+        if (extendTimer >= 20) {
+            robot.wrist.setPosition(1);
+            robot.timmy.setPosition(0);
+            extending = false;
+            extendTimer = 0;
         }
-        else if (gamepad2.b) {
-            neckL.setPosition(0);
-            //neckR.setPosition(0.25);
+        //claw grab sequence
+        if(grabbing) grabbingTimer++;
+        if(grabbingTimer >= 20){
+            robot.timmy.setPosition(0.339);
+            clawOpen = false;
+            clawOpen = false;
+        }
+        if(grabbingTimer >= 40){
+            neckPos = 0.3;
+            extendPosR = 0.5;
+            extendPosL = 0.5;
+            grabbing = false;
+            grabbingTimer = 0;
+        }
+        //claw deposot sequence
+        if (depositing) depositTimer++;
+        if (depositTimer >= 40) {
+            robot.timmy.setPosition(0);
+            clawOpen = true;
+            depositing = false;
+            deposited = true;
+            depositTimer = 0;
         }
 
-        //timmy
-        if (gamepad2.left_bumper) {
-            timy.setPosition(0);
-            } else if(gamepad2.right_bumper){
-                timy.setPosition(1);
+        //claw deposit logic --> sequence if depositing
+        if(gamepad2.b && !bPressed) {
+            if (!deposited && robot.drv4bR.getPosition() <= 0.5) {
+                // deposit
+                robot.wrist.setPosition(0.228);
+                neckPos = 0.08;
+                depositing = true;
+            } else if (deposited && robot.drv4bR.getPosition() <= 0.5) {
+                // retract
+                neckPos = 0.3;
+                robot.wrist.setPosition(0.75);
+                robot.timmy.setPosition(0.3);
+                deposited = false;
             }
-        if (gamepad2.back) {
-            timy.setPosition(0.5);
+            bPressed = true;
+        } else if(!gamepad2.b) bPressed = false;
+        if(robot.drv4bR.getPosition() >= 0.95 && gamepad2.b) {robot.timmy.setPosition(0); clawOpen = true;}
+
+        //timmy independent control
+        if(gamepad2.x && !xPressed) {
+            if (!clawOpen) {
+                robot.timmy.setPosition(0);
+                clawOpen = true;
+            } else if (clawOpen) {
+                robot.timmy.setPosition(0.339);
+                clawOpen = false;
+            }
+            xPressed = true;
+        } else if(!gamepad2.x) xPressed = false;
+
+        //hanging
+        if((robot.hangerL.getCurrentPosition() < 0 || robot.hangerR.getCurrentPosition() < 0)) {
+            robot.hangerL.setTargetPosition(0);
+            robot.hangerL.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            robot.hangerL.setPower(1);
+            robot.hangerR.setTargetPosition(0);
+            robot.hangerR.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            robot.hangerR.setPower(1);
+            telemetry.addLine("hanger stabilizing");
+        } else if(robot.hangerL.getCurrentPosition() > 6304 || robot.hangerR.getCurrentPosition() > 6304){
+            robot.hangerL.setTargetPosition(6304);
+            robot.hangerL.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            robot.hangerL.setPower(1);
+            robot.hangerR.setTargetPosition(6304);
+            robot.hangerR.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            robot.hangerR.setPower(1);
+            telemetry.addLine("hanger stabilizing");
+        } else if(gamepad1.a){
+            robot.hangerL.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            robot.hangerL.setPower(1);
+            robot.hangerR.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            robot.hangerR.setPower(1);
+            telemetry.addLine("hanger up");
+        } else if (gamepad1.y){
+            robot.hangerL.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            robot.hangerL.setPower(-1);
+            robot.hangerR.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            robot.hangerR.setPower(-1);
+            telemetry.addLine("hanger down");
+        } else{
+            robot.hangerL.setPower(0);
+            robot.hangerR.setPower(0);
+            telemetry.addLine("hanger stopped");
         }
 
-        telemetry.addData("pid calc", pid + ff);
-        telemetry.addData("pos", slidePos);
-        telemetry.addData("ff", ff);
-        telemetry.addData("target", target);
-        telemetry.addData("extebd pos", drv4bR.getPosition());
-        telemetry.addData("vbr pos", neckR.getPosition());
-        telemetry.addData("timy", timy.getPosition() == 0.5 ? "STOPPED" : timy.getPosition() == 1 ? "REVERSE" : "INTAKING");
+        //telemetry.addData("pid calc", pid + ff);
+        telemetry.addData("neck pos", robot.neck.getPosition());
+        telemetry.addData("slide power", power);
+        telemetry.addData("slide target", target);
+        telemetry.addData("slide pos", slidePos);
+        telemetry.addData("timy", robot.timmy.getPosition() == 0.5 ? "STOPPED" : robot.timmy.getPosition() == 1 ? "REVERSE" : "INTAKING");
+        telemetry.addLine("deposit " + depositing +", " + depositTimer);
         telemetry.update();
     }
 }
