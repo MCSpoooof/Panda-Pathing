@@ -180,18 +180,21 @@ public class Follower {
         leftRear.setDirection(DcMotorSimple.Direction.REVERSE);
         backSlides.setDirection(DcMotorSimple.Direction.REVERSE);
         frontSlides.setDirection(DcMotorSimple.Direction.REVERSE);
-        backSlides.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        frontSlides.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        backSlides.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
         frontSlides.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         frontSlides.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        backSlides.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        backSlides.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         hangerL.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         hangerL.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         hangerR.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         hangerR.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         // servo configs
-        drv4bL = (ServoImplEx)hardwareMap.get(Servo.class, "cs0"); // 0.5 --> 0 extend
-        drv4bR = (ServoImplEx)hardwareMap.get(Servo.class, "es0"); // 0.5 --> 1 extend
+        drv4bL = (ServoImplEx)hardwareMap.get(Servo.class, "cs0"); // 0.567 --> 0 extend
+        drv4bR = (ServoImplEx)hardwareMap.get(Servo.class, "es0"); // 0.379 --> 1 extend
         timmy  = (ServoImplEx)hardwareMap.get(Servo.class, "es2"); // 0 --> 0.339 closed
         wrist  = (ServoImplEx)hardwareMap.get(Servo.class, "cs2"); // 0.228 --> 1 out
         neck   = (ServoImplEx)hardwareMap.get(Servo.class, "cs4"); // 0.08 --> 0.873 out**
