@@ -92,9 +92,9 @@ public class TelePOP extends OpMode {
         int slidePos = robot.frontSlides.getCurrentPosition();
         double pid = slideyController.calculate(slidePos, target); //p*(target-slidePos)
         // gravity comp calc (kG)
-        double gearRatio = 5.2; //motor revolutions per shaft revolution
+        double gearRatio = 13.7; //motor revolutions per shaft revolution
         double shaftRadius = 0.008; //m
-        double torque = 0.775; //N.m per motor revolution
+        double torque = 1.834; //N.m per motor revolution
         double maxLinearForce = torque*gearRatio / shaftRadius; //N per shaft revolution
         double mass = 2.35; //kg
         double force = mass *(9.81); //N
@@ -178,8 +178,7 @@ public class TelePOP extends OpMode {
             if(!neckUp){
                 neckPos = 0.5;
                 neckUp = true;
-            }
-            if(neckUp ){
+            } else {
                 neckPos = 1;
                 neckUp = false;
             }
@@ -250,7 +249,6 @@ public class TelePOP extends OpMode {
                 robot.wrist.setPosition(0.75);
                 robot.timmy.setPosition(0.3);
                 depositing = false;
-                specimen = true;
             }
             bPressed = true;
         } else if(!gamepad2.b) bPressed = false;
@@ -262,7 +260,7 @@ public class TelePOP extends OpMode {
                 robot.timmy.setPosition(0);
                 if(specimen) specimen = false;
                 clawOpen = true;
-            } else if (clawOpen) {
+            } else {
                 robot.timmy.setPosition(0.339);
                 clawOpen = false;
             }
