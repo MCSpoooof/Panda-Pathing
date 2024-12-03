@@ -19,13 +19,13 @@ public class TelePOP extends OpMode {
 
     // slide PIDF
     public PIDController slideyController;
-    public static double p = 0.01, i = 0, d = 0;
+    public static double p = 0.0009, i = 0, d = 0.000001;
     public static double f = 0;
     public int target = 0;
     private final double TICKS_PER_DEG = 103.8/360;
 
-    boolean dUpPressed, dDownPressed, yPressed, aPressed, rbumpPressed, extended = false, backPressed, xPressed, bPressed, clawOpen, depositing = false, grabbing = false, extending = false, specimen = false, neckUp = false;
-    double strafePow, extendPosR = 0.379, extendPosL = 0.567, speed, sspeed, mult = 1, depositTimer = 0, grabbingTimer = 0, extendTimer = 0, neckPos = 0.3, slideSpee = 1;
+    boolean dUpPressed, dDownPressed, yPressed, aPressed, rbumpPressed, extended = false, backPressed, xPressed, bPressed, clawOpen, depositing = false, grabbing = false, extending = false, specimen = false, neckUp = true, slowMode = false, lBumpPressed;
+    double strafePow, extendPosR = 0.379, extendPosL = 0.567, driveSpeed, turnSpeed, mult = 1, depositTimer = 0, grabbingTimer = 0, extendTimer = 0, neckPos = 0.3, slideSpee = 1;
 
     boolean slowmode = false;
 
@@ -57,19 +57,25 @@ public class TelePOP extends OpMode {
         robot.update();*/
 
         //speed control
-        if(robot.frontSlides.getCurrentPosition() > 1000) speed = (double)800/robot.frontSlides.getCurrentPosition();
-        else speed = mult;
-        if(extendPosR >= 0.9) sspeed = 0.5;
-        else sspeed = mult;
-        if(gamepad1.left_bumper)
-            mult = 0.33;
-        if(gamepad1.right_bumper)
-            mult = 1;
+        if(robot.frontSlides.getCurrentPosition() > 1000 || extendPosR >= 0.9)
+            driveSpeed = 1000/(double)robot.frontSlides.getCurrentPosition();
+        else driveSpeed = mult;
+
+        if(gamepad1.left_bumper && !lBumpPressed) {
+            if (!slowMode) {
+                mult = 0.33;
+                slowMode = true;
+            } else if (slowMode) {
+                mult = 1;
+                slowMode = false;
+            }
+            lBumpPressed = true;
+        } else if(!gamepad1.left_bumper) lBumpPressed = false;
 
         // classic mecanum drive
-        double twist  = speed*(gamepad1.right_stick_x);
-        double strafe = speed*(gamepad1.left_trigger != 0 ? gamepad1.left_trigger : gamepad1.right_trigger != 0 ? -gamepad1.right_trigger : 0 * speed);
-        double drive  = sspeed*speed*(-gamepad1.left_stick_y);
+        double twist  = driveSpeed*(gamepad1.right_stick_x);
+        double strafe = 0.8*driveSpeed*(gamepad1.left_trigger != 0 ? gamepad1.left_trigger : gamepad1.right_trigger != 0 ? -gamepad1.right_trigger : 0);
+        double drive  = driveSpeed*(-gamepad1.left_stick_y);
         double[] speeds = {
                 (drive + strafe + twist),
                 (drive - strafe - twist),
@@ -107,14 +113,13 @@ public class TelePOP extends OpMode {
         robot.backSlides.setPower(power);
 
         if(gamepad2.left_stick_y != 0) {
-            if (-gamepad2.left_stick_y > 0 && target < 1700) // upper limit
+            if (-gamepad2.left_stick_y > 0 && target < 4520) // upper limit
                 target += 10 * -gamepad2.left_stick_y;
             if (-gamepad2.left_stick_y < 0 && target > 0) // lower limit
                 target += 10 * -gamepad2.left_stick_y;
         } else {
             if (gamepad2.dpad_up && !dUpPressed) {
-                if(specimen) target = 820;
-                else target = 1700; // top basket
+                target = specimen ? 2600 : 4520; // top basket
                 dUpPressed = true;
             } else if (!gamepad2.dpad_up) dUpPressed = false;
             if (gamepad2.dpad_down && !dDownPressed) {
@@ -123,7 +128,7 @@ public class TelePOP extends OpMode {
             } else if (!gamepad2.dpad_down) dDownPressed = false;
         }
         if(target <= 0) target = 0; // reset position if out of bounds
-        if(target >= 1700) target = 1700;
+        if(target >= 4520) target = 4520;
 
 
         /*if(gamepad2.right_stick_y != 0) {
@@ -150,23 +155,32 @@ public class TelePOP extends OpMode {
                 extendPosL = 0;
                 extended = true;
             }
-            else{
+            else if(!clawOpen){
                 neckPos = 0.3;
-                robot.timmy.setPosition(0.339);
-                robot.wrist.setPosition(1);
                 extendPosR = 0.369;
                 extendPosL = 0.577;
+                robot.wrist.setPosition(1);
+                retracting = true;
                 extended = false;
             }
             aPressed = true;
         } else if (!gamepad2.a) aPressed = false;
         //}
-        if(gamepad1.right_bumper && extended){
-            //retract --> sequence if grabbing
-            grabbing = true;
-            neckPos = 0.93;
-            extended = false;
-        }
+
+        //driver 1 toggle neckPos when extended
+        if(gamepad1.right_bumper && extended && !rbumpPressed){
+            if(!neckUp){
+                neckPos = 0.8;
+                robot.timmy.setPosition(0);
+                clawOpen = true;
+                neckUp = true;
+            } else {
+                neckPos = 0.93;
+                grabbing = true;
+                neckUp = false;
+            }
+            rbumpPressed = true;
+        } if(!gamepad1.right_bumper) rbumpPressed = false;
         robot.drv4bR.resetDeviceConfigurationForOpMode();
         robot.drv4bL.resetDeviceConfigurationForOpMode();
         robot.drv4bR.setPosition(extendPosR);
@@ -204,13 +218,15 @@ public class TelePOP extends OpMode {
         if(grabbingTimer >= 20){
             robot.timmy.setPosition(0.339);
             clawOpen = false;
-        }
-        if(grabbingTimer >= 40){
-            neckPos = 0.3;
-            extendPosR = 0.369;
-            extendPosL = 0.577;
             grabbing = false;
             grabbingTimer = 0;
+        }
+        //claw retract sequence
+        if(retracting) retractingTimer++;
+        if(retractingTimer >= 40){
+            robot.wrist.setPosition(0.18);
+            neckPos = 0.25;
+
         }
         //claw deposot sequence
         if (depositing) depositTimer++;
@@ -218,6 +234,7 @@ public class TelePOP extends OpMode {
             if (depositTimer >= 50) {
                 neckPos = 0.3;
                 robot.timmy.setPosition(0.3);
+                clawOpen = false;
                 robot.wrist.setPosition(1);
             } else if (depositTimer >= 40) {
                 robot.timmy.setPosition(0);
@@ -226,6 +243,7 @@ public class TelePOP extends OpMode {
         } else if (bPressed && depositTimer >= 10) {
             robot.wrist.setPosition(0.18);
             robot.timmy.setPosition(0);
+            clawOpen = false;
             neckPos = 0.25;
             specimen = true;
         }
@@ -241,6 +259,7 @@ public class TelePOP extends OpMode {
                 // deposit
                 robot.wrist.setPosition(0.18);
                 neckPos = 0.25;
+
                 depositing = true;
             }
             if (specimen && robot.drv4bR.getPosition() <= 0.5) {
