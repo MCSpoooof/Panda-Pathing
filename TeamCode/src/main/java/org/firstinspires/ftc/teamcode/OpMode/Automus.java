@@ -148,7 +148,7 @@ public class Automus extends LinearOpMode {
                 if (pathTimer.getElapsedTimeSeconds() > 2)
                     robot.timmy.setPosition(clawClose);
                 else {
-                    robot.setMaxPower(1);
+                    robot.setMaxPower(0.5);
                     robot.neck.setPosition(neckBack);
                     robot.wrist.setPosition(wristBOut);
                     robot.timmy.setPosition(clawOpen);
@@ -180,14 +180,17 @@ public class Automus extends LinearOpMode {
                 break;
             case 3: //drop sample and back up
                 if(stopped){
-                    robot.followPath(addPath(-25, 15, 90));
+                    robot.followPath(addPath(-22, 19, 90));
                     stopped = false;
                 }
                 if(time > 0.5) target = 0;
                 robot.neck.setPosition(neckBack);
+                sleep(500);
                 robot.wrist.setPosition(TelePOP.wristFDown);
-                if(robot.atParametricEnd()){
+                sleep(500);
+                if(slidePos == target){
                     robot.timmy.setPosition(clawClose);
+                    sleep(2000);
                     setPathState(4);
                     stopped = true;
                 }
@@ -200,6 +203,19 @@ public class Automus extends LinearOpMode {
                 if(robot.timmy.getPosition() == clawOpen) setPathState(5);
                 break;
             case 5:
+                robot.drv4bR.setPosition(extendRMax);
+                robot.drv4bL.setPosition(extendLMax);
+                robot.neck.setPosition(neckOutDown);
+                if(time > 1) robot.timmy.setPosition(clawOpen);
+                if(robot.timmy.getPosition() == clawOpen) setPathState(5);
+                break;
+//            case 6:
+//                robot.drv4bR.setPosition(extendRMax);
+//                robot.drv4bL.setPosition(extendLMax);
+//                robot.neck.setPosition(neckOutDown);
+//                if(time > 1) robot.timmy.setPosition(clawOpen);
+//                if(robot.timmy.getPosition() == clawOpen) setPathState(5);
+//                break;
         }
     }
 
