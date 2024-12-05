@@ -151,7 +151,7 @@ public class Automus extends LinearOpMode {
                     robot.setMaxPower(1);
                     robot.neck.setPosition(neckBack);
                     robot.wrist.setPosition(wristBOut);
-                    robot.timmy.setPosition(clawClose);
+                    robot.timmy.setPosition(clawOpen);
                     robot.drv4bL.setPosition(extendLMin);
                     robot.drv4bR.setPosition(extendRMin);
                 }
@@ -161,8 +161,8 @@ public class Automus extends LinearOpMode {
                     robot.followPath(addPath(-30, 10, 45));
                     stopped = false;
                 }
-                target = 4200;
-                if(slidePos >= slideMax-300){
+                target = slideMax-300;
+                if(slidePos >= target){
                     setPathState(2);
                     stopped = true;
                 }
@@ -183,7 +183,7 @@ public class Automus extends LinearOpMode {
                     robot.followPath(addPath(-25, 15, 90));
                     stopped = false;
                 }
-                target = 0;
+                if(time > 0.5) target = 0;
                 robot.neck.setPosition(neckBack);
                 robot.wrist.setPosition(TelePOP.wristFDown);
                 if(robot.atParametricEnd()){
@@ -195,10 +195,11 @@ public class Automus extends LinearOpMode {
             case 4:
                 robot.drv4bR.setPosition(extendRMax);
                 robot.drv4bL.setPosition(extendLMax);
-                if(robot.drv4bR.getPosition() == extendRMax) setPathState(5);
+                robot.neck.setPosition(neckOutDown);
+                if(time > 1) robot.timmy.setPosition(clawOpen);
+                if(robot.timmy.getPosition() == clawOpen) setPathState(5);
                 break;
             case 5:
-
         }
     }
 
