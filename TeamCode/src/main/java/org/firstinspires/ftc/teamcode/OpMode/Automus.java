@@ -24,6 +24,7 @@ public class Automus extends LinearOpMode {
     private double lastX = 0;
     private double lastY = 0;
     private static double lastH = 0;
+    public boolean stopped = true;
     public int pathState;
     public Timer pathTimer = new Timer();
 
@@ -152,25 +153,43 @@ public class Automus extends LinearOpMode {
                 }
                 break;
             case 1: //run robo to bucket and lift slides
-                if(!robot.isBusy()) robot.followPath(addPath(-30, 10, 45));
+                if(stopped){
+                    robot.followPath(addPath(-30, 10, 45));
+                    stopped = false;
+                }
                 target = 4200;
-                if(slidePos >= 4200) setPathState(2);
+                if(slidePos >= 4200){
+                    setPathState(2);
+                    stopped = true;
+                }
                 break;
             case 2:
-                if(!robot.isBusy()) robot.followPath(addPath(-32.5, 7.5, 45));
+                if(stopped){
+                    robot.followPath(addPath(-32.5, 7.5, 45));
+                    stopped = false;
+                }
                 if (time > 0.5) {
                     robot.timmy.setPosition(0);
                 }
-                if(robot.atParametricEnd()) setPathState(3);
+                if(robot.atParametricEnd()){
+                    setPathState(3);
+                    stopped = true;
+                }
                 break;
             case 3: //drop sample and back up
-                if(!robot.isBusy()) robot.followPath(addPath(-30, 10, 90));
+                if(stopped){
+                    robot.followPath(addPath(-30, 10, 90));
+                    stopped = false;
+                }
                 target = 0;
                 robot.neck.setPosition(0.3);
                 robot.wrist.setPosition(TelePOP.wristFDown);
                 if(time > 0.2)
                     robot.timmy.setPosition(0.3);
-                if(robot.atParametricEnd()) setPathState(4);
+                if(robot.atParametricEnd()){
+                    setPathState(4);
+                    stopped = true;
+                }
                 break;
             case 4:
                 robot.drv4bR.setPosition(1);
