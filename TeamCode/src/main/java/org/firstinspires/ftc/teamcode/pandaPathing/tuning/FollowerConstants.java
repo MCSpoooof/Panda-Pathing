@@ -186,7 +186,7 @@ public class FollowerConstants {
 
     // Secondary heading error PIDF coefficients
     public static PIDFSet secondaryHeadingPIDFCoefficients = new PIDFSet(
-            1.3,
+            1.8,
             0,
             0.2,
             0);

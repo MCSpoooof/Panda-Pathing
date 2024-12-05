@@ -2,6 +2,9 @@ package org.firstinspires.ftc.teamcode.OpMode;
 
 import static java.lang.Thread.sleep;
 
+import android.text.method.TextKeyListener;
+
+import com.arcrobotics.ftclib.controller.PIDController;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -28,6 +31,9 @@ import java.util.ArrayList;
 @Autonomous(name = "Automus")
 public class Automus extends LinearOpMode {
     private Follower robot;
+    public PIDController slideyController;
+    public static double p = 0.0009, i = 0, d = 0.000001;
+    public double target = 0;
     private double lastX = 0;
     private double lastY = 0;
     private static double lastH = 0;
@@ -39,65 +45,92 @@ public class Automus extends LinearOpMode {
         robot.initialize();
         for (DcMotorEx motor : robot.motors)
             motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
+        // pid configs
+        slideyController = new PIDController(p, i, d);
     }
 
     public void runOpMode() {
         initi();
-
+        while(opModeInInit()) pathUpdate();
         waitForStart();
 
+        setPathState(1);
+        while(opModeIsActive()) {
+            slideyController.setPID(p, i, d);
+            int slidePos = robot.frontSlides.getCurrentPosition();
+            double pid = slideyController.calculate(slidePos, target); //p*(target-slidePos)
+            // gravity comp calc (kG)
+            double gearRatio = 13.7; //motor revolutions per shaft revolution
+            double shaftRadius = 0.008; //m
+            double torque = 1.834; //N.m per motor revolution
+            double maxLinearForce = torque*gearRatio / shaftRadius; //N per shaft revolution
+            double mass = 3; //kg
+            double force = mass *(9.81); //N
+            double kG = force/maxLinearForce;
+            // slide power
+            double power = pid + kG;
+            robot.frontSlides.setPower(power);
+            robot.backSlides.setPower(power);
+
+            pathUpdate();
+            robot.update();
+
+            telemetry.addData("path state", pathState);
+            telemetry.update();
+        }
         // preload to bar
-        robot.followPath(addPath(31, 6, 0));
-        while(!robot.getCurrentPath().isAtParametricEnd()) {
-            robot.frontSlides.setTargetPosition(1000);
-            robot.frontSlides.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            robot.frontSlides.setPower(1);
-            robot.update();
-        }
-        robot.backSlides.setPower(0);
-
-        //sample grab 1
-        robot.followPath(addPath(20, -23, -60));
-        while(!robot.getCurrentPath().isAtParametricEnd()) {
-            robot.frontSlides.setTargetPosition(0);
-            robot.frontSlides.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            robot.frontSlides.setPower(0.5);
-            robot.update();
-        }
-
-        //sample drop off 1
-        robot.followPath(addPath(25, -23, -150));
-        while(!robot.getCurrentPath().isAtParametricEnd()){
-            robot.update();
-        }
-
-        robot.followPath(addPath(25, -25, -66));  // sample grab 2
-        while(!robot.getCurrentPath().isAtParametricEnd()){robot.update();}
-        sleep(1);
-        robot.followPath(addPath(25, -25, -156)); // sample drop off 2
-        while(!robot.getCurrentPath().isAtParametricEnd()){robot.update();}
-        sleep(1);
-        robot.followPath(addPath(25, -27, -72));  // sample grab 3
-        while(!robot.getCurrentPath().isAtParametricEnd()){robot.update();}
-        sleep(1);
-        robot.followPath(addPath(25, -27, -162)); // sample drop off 3
-        while(!robot.getCurrentPath().isAtParametricEnd()){robot.update();}
-        sleep(1);
-
-        robot.followPath(addPath(26, 10, 0));
-        while(!robot.getCurrentPath().isAtParametricEnd()){robot.update();}
-        robot.followPath(addPath(25, -28, 0));
-        while(!robot.getCurrentPath().isAtParametricEnd()){robot.update();}
-
-        robot.followPath(addPath(26, 10, 0));
-        while(!robot.getCurrentPath().isAtParametricEnd()){robot.update();}
-        robot.followPath(addPath(25, -28, 0));
-        while(!robot.getCurrentPath().isAtParametricEnd()){robot.update();}
-
-        robot.followPath(addPath(26, 10, 0));
-        while(!robot.getCurrentPath().isAtParametricEnd()){robot.update();}
-        robot.followPath(addPath(25, -28, 0));
-        while(!robot.getCurrentPath().isAtParametricEnd()){robot.update();}
+//        robot.followPath(addPath(31, 6, 0));
+//        while(!robot.getCurrentPath().isAtParametricEnd()) {
+//            robot.frontSlides.setTargetPosition(1000);
+//            robot.frontSlides.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+//            robot.frontSlides.setPower(1);
+//            robot.update();
+//        }
+//        robot.backSlides.setPower(0);
+//
+//        //sample grab 1
+//        robot.followPath(addPath(20, -23, -60));
+//        while(!robot.getCurrentPath().isAtParametricEnd()) {
+//            robot.frontSlides.setTargetPosition(0);
+//            robot.frontSlides.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+//            robot.frontSlides.setPower(0.5);
+//            robot.update();
+//        }
+//
+//        //sample drop off 1
+//        robot.followPath(addPath(25, -23, -150));
+//        while(!robot.getCurrentPath().isAtParametricEnd()){
+//            robot.update();
+//        }
+//
+//        robot.followPath(addPath(25, -25, -66));  // sample grab 2
+//        while(!robot.getCurrentPath().isAtParametricEnd()){robot.update();}
+//        sleep(1);
+//        robot.followPath(addPath(25, -25, -156)); // sample drop off 2
+//        while(!robot.getCurrentPath().isAtParametricEnd()){robot.update();}
+//        sleep(1);
+//        robot.followPath(addPath(25, -27, -72));  // sample grab 3
+//        while(!robot.getCurrentPath().isAtParametricEnd()){robot.update();}
+//        sleep(1);
+//        robot.followPath(addPath(25, -27, -162)); // sample drop off 3
+//        while(!robot.getCurrentPath().isAtParametricEnd()){robot.update();}
+//        sleep(1);
+//
+//        robot.followPath(addPath(26, 10, 0));
+//        while(!robot.getCurrentPath().isAtParametricEnd()){robot.update();}
+//        robot.followPath(addPath(25, -28, 0));
+//        while(!robot.getCurrentPath().isAtParametricEnd()){robot.update();}
+//
+//        robot.followPath(addPath(26, 10, 0));
+//        while(!robot.getCurrentPath().isAtParametricEnd()){robot.update();}
+//        robot.followPath(addPath(25, -28, 0));
+//        while(!robot.getCurrentPath().isAtParametricEnd()){robot.update();}
+//
+//        robot.followPath(addPath(26, 10, 0));
+//        while(!robot.getCurrentPath().isAtParametricEnd()){robot.update();}
+//        robot.followPath(addPath(25, -28, 0));
+//        while(!robot.getCurrentPath().isAtParametricEnd()){robot.update();}
 
 
     }
@@ -114,44 +147,54 @@ public class Automus extends LinearOpMode {
         return path;
     }
 
-    /*public void pathUpdate() {
+    public void pathUpdate() {
+        double time = pathTimer.getElapsedTimeSeconds();
         switch (pathState) {
             case 0: //Runs to the position of the preload and holds it's point at 0.5 power
-                robot.liftPIDF = false;
-                robot.extend.toZero();
-                robot.startChamber();
-                setPathState(999);
-                break;
-            case 999:
-                if(pathTimer.getElapsedTimeSeconds() > 0.375) {
-                    robot.follower.setMaxPower(1);
-                    robot.follower.followPath(auto.preload, false);
-                    setPathState(1);
+                if (pathTimer.getElapsedTimeSeconds() > 2)
+                    robot.timmy.setPosition(0.338);
+                else {
+                    robot.setMaxPower(1);
+                    robot.neck.setPosition(0.3);
+                    robot.wrist.setPosition(TelePOP.wristBOut);
+                    robot.timmy.setPosition(0);
+                    robot.drv4bL.setPosition(0.567);
+                    robot.drv4bR.setPosition(0.379);
                 }
                 break;
-            case 1: //Once Chamber State Machine finishes, begins Pathchain to push elements to the submersible
-                if(!robot.isBusy()) {
-                    robot.claw.open();
-                    robot.setMaxPower(0.9);
-                    robot.followPath(auto.pushSamples, true);
+            case 1: //run robo to bucket and lift slides
+                if (!robot.isBusy()) {
+                    robot.followPath(addPath(-30, 10, 45));
+                    target = 4200;
                     setPathState(2);
                 }
                 break;
-            case 2: //Once the Pathchain finishes, begins the Specimen State Machine
-                if(!robot.isBusy()) {
-                    robot.startSpecimen();
+            case 2:
+                if(!robot.isBusy()) robot.followPath(addPath(-32.5, 7.5, 45));
+                if (time > 0.2) {
+                    robot.timmy.setPosition(0);
                     setPathState(3);
                 }
                 break;
-            case 3: //Once the Specimen State Machine finishes, begins the grab path
-                if(auto.actionNotBusy()) {
-                    auto.follower.setMaxPower(0.9);
-                    auto.follower.followPath(auto.grab1, false);
+            case 3: //drop sample and back up
+                if (!robot.isBusy()) {
+                    robot.followPath(addPath(-30, 10, 90));
+                    setPathState(4);
+                    target = 0;
+                    robot.neck.setPosition(0.3);
+                    robot.wrist.setPosition(TelePOP.wristFDown);
+                } else if(time > 0.2) {
+                    robot.timmy.setPosition(0.3);
                     setPathState(4);
                 }
                 break;
+            case 4:
+                robot.drv4bR.setPosition(1);
+                robot.drv4bL.setPosition(0);
+                if(!robot.isBusy()) setPathState(5);
+                break;
         }
-    }*/
+    }
 
     public void setPathState(int x) {
         pathState = x;
