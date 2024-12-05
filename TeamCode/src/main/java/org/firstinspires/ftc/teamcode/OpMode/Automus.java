@@ -148,7 +148,7 @@ public class Automus extends LinearOpMode {
                 if (pathTimer.getElapsedTimeSeconds() > 2)
                     robot.timmy.setPosition(clawClose);
                 else {
-                    robot.setMaxPower(1);
+                    robot.setMaxPower(0.5);
                     robot.neck.setPosition(neckBack);
                     robot.wrist.setPosition(wristBOut);
                     robot.timmy.setPosition(clawOpen);
@@ -180,14 +180,14 @@ public class Automus extends LinearOpMode {
                 break;
             case 3: //drop sample and back up
                 if(stopped){
-                    robot.followPath(addPath(-25, 15, 90));
+                    robot.followPath(addPath(-22, 20, 90));
                     stopped = false;
                 }
                 if (time > 1.5) robot.wrist.setPosition(TelePOP.wristFDown);
                 else if(time > 1) robot.timmy.setPosition(clawClose);
                 else if(time > 0.5) {target = 0; robot.neck.setPosition(neckBack);}
-
-                if(robot.atParametricEnd() && time > 1.5){
+                //Cache is a bit silly sometimes
+                if(slidePos == target && time > 1.5){
                     setPathState(4);
                     stopped = true;
                 }
@@ -195,11 +195,21 @@ public class Automus extends LinearOpMode {
             case 4:
                 robot.drv4bR.setPosition(extendRMax);
                 robot.drv4bL.setPosition(extendLMax);
-                robot.neck.setPosition(neckOutDown);
+                robot.neck.setPosition(neckOutUp);
                 if(time > 1) robot.timmy.setPosition(clawOpen);
                 if(robot.timmy.getPosition() == clawOpen) setPathState(5);
                 break;
             case 5:
+                robot.neck.setPosition(neckOutDown);
+                if(time > 0.25) robot.timmy.setPosition(clawClose);
+                robot.timmy.setPosition(neckOutUp);
+                robot.timmy.setPosition(wristBOut);
+                if(robot.wrist.getPosition() == wristBOut) setPathState(6);
+                break;
+            case 6:
+                robot.drv4bR.setPosition(extendRMin);
+                robot.drv4bL.setPosition(extendLMin);
+                break;
         }
     }
 
