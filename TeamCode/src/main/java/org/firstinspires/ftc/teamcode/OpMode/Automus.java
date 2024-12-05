@@ -201,9 +201,10 @@ public class Automus extends LinearOpMode {
                 break;
             case 5:
                 robot.neck.setPosition(neckOutDown);
-                if(time > 0.25) robot.timmy.setPosition(clawClose);
-                robot.timmy.setPosition(neckOutUp);
-                robot.timmy.setPosition(wristBOut);
+                if(time > 0.75) {
+                    robot.neck.setPosition(neckBack);
+                    robot.wrist.setPosition(wristBOut);
+                } else if(time > 0.25) robot.timmy.setPosition(clawClose);
                 if(robot.wrist.getPosition() == wristBOut) setPathState(6);
                 break;
             case 6:
