@@ -72,6 +72,15 @@ public class Follower {
     public Servo drv4bL, drv4bR, timmy, neck, wrist;
     public List<DcMotorEx> motors;
 
+    public final static double
+            wristFDown = 0.8, wristFOut = 0.536, wristBOut = 0.055, wristBDown = 0,
+            extendRMax = 1, extendLMax = 0, extendRMin = 0.369, extendLMin = 0.577,
+            neckOutUp = 0.8, neckOutDown = 1, neckBack = 0.3,
+            clawOpen = 0, clawClose = 0.338;
+
+    public final static int
+            slideMax = 4520, slideMaxSpec = 2000, slideMin = 0;
+
     private DriveVectorScaler driveVectorScaler;
 
     private PoseUpdater poseUpdater;

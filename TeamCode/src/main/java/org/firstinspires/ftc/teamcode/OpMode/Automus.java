@@ -1,33 +1,20 @@
 package org.firstinspires.ftc.teamcode.OpMode;
 
-import static java.lang.Thread.sleep;
-
-import android.text.method.TextKeyListener;
+import static org.firstinspires.ftc.teamcode.pandaPathing.follower.Follower.*;
 
 import com.arcrobotics.ftclib.controller.PIDController;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.hardware.Servo;
-import com.qualcomm.robotcore.hardware.ServoController;
 
 import org.firstinspires.ftc.teamcode.pandaPathing.follower.Follower;
-import org.firstinspires.ftc.teamcode.pandaPathing.localization.Pose;
-import org.firstinspires.ftc.teamcode.pandaPathing.pathGeneration.BezierCurve;
 import org.firstinspires.ftc.teamcode.pandaPathing.pathGeneration.BezierLine;
 import org.firstinspires.ftc.teamcode.pandaPathing.pathGeneration.BezierPoint;
 import org.firstinspires.ftc.teamcode.pandaPathing.pathGeneration.Path;
-import org.firstinspires.ftc.teamcode.pandaPathing.pathGeneration.PathChain;
 import org.firstinspires.ftc.teamcode.pandaPathing.pathGeneration.Point;
 import org.firstinspires.ftc.teamcode.pandaPathing.util.Timer;
 
-import java.sql.Array;
-import java.util.ArrayList;
-
-//@Disabled
 @Autonomous(name = "Automus")
 public class Automus extends LinearOpMode {
     private Follower robot;
@@ -147,8 +134,9 @@ public class Automus extends LinearOpMode {
         return path;
     }
 
-    public void pathUpdate() {
+     public void pathUpdate() {
         double time = pathTimer.getElapsedTimeSeconds();
+        double slidePos = robot.frontSlides.getCurrentPosition();
         switch (pathState) {
             case 0: //Runs to the position of the preload and holds it's point at 0.5 power
                 if (pathTimer.getElapsedTimeSeconds() > 2)
@@ -156,43 +144,40 @@ public class Automus extends LinearOpMode {
                 else {
                     robot.setMaxPower(1);
                     robot.neck.setPosition(0.3);
-                    robot.wrist.setPosition(TelePOP.wristBOut);
+                    robot.wrist.setPosition(wristBOut);
                     robot.timmy.setPosition(0);
                     robot.drv4bL.setPosition(0.567);
                     robot.drv4bR.setPosition(0.379);
                 }
                 break;
             case 1: //run robo to bucket and lift slides
-                if (!robot.isBusy()) {
-                    robot.followPath(addPath(-30, 10, 45));
-                    target = 4200;
-                    setPathState(2);
-                }
+                robot.followPath(addPath(-30, 10, 45));
+                target = 4200;
+                if(slidePos >= 4200) setPathState(2);
                 break;
             case 2:
-                if(!robot.isBusy()) robot.followPath(addPath(-32.5, 7.5, 45));
-                if (time > 0.2) {
+                robot.followPath(addPath(-32.5, 7.5, 45));
+                if (time > 0.5) {
                     robot.timmy.setPosition(0);
-                    setPathState(3);
                 }
+                if(robot.atParametricEnd()) setPathState(3);
                 break;
             case 3: //drop sample and back up
-                if (!robot.isBusy()) {
-                    robot.followPath(addPath(-30, 10, 90));
-                    setPathState(4);
-                    target = 0;
-                    robot.neck.setPosition(0.3);
-                    robot.wrist.setPosition(TelePOP.wristFDown);
-                } else if(time > 0.2) {
+                robot.followPath(addPath(-30, 10, 90));
+                target = 0;
+                robot.neck.setPosition(0.3);
+                robot.wrist.setPosition(TelePOP.wristFDown);
+                if(time > 0.2)
                     robot.timmy.setPosition(0.3);
-                    setPathState(4);
-                }
+                if(robot.atParametricEnd()) setPathState(4);
                 break;
             case 4:
                 robot.drv4bR.setPosition(1);
                 robot.drv4bL.setPosition(0);
-                if(!robot.isBusy()) setPathState(5);
+                if(robot.drv4bR.getPosition() == 1) setPathState(5);
                 break;
+            case 5:
+
         }
     }
 
