@@ -296,17 +296,17 @@ public class TelePOP extends OpMode {
         //hanging
         if(gamepad1.y && !yPressed1){
             if(!hanging) {
-                robot.hangerL.setTargetPosition(6310);
+                robot.hangerL.setTargetPosition(6410);
                 robot.hangerL.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                 robot.hangerL.setPower(1);
-                robot.hangerR.setTargetPosition(6310);
+                robot.hangerR.setTargetPosition(6410);
                 robot.hangerR.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                 robot.hangerR.setPower(1);
                 hanging = true;
             } else{
                 robot.hangerL.setTargetPosition(0);
                 robot.hangerL.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                robot.hangerL.setTargetPosition(0);
+                robot.hangerR.setTargetPosition(0);
                 robot.hangerR.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                 hanging = false;
             }

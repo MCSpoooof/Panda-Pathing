@@ -39,6 +39,7 @@ public class Automus extends LinearOpMode {
 
     public void runOpMode() {
         initi();
+        setPathState(0);
         while(opModeInInit()) pathUpdate();
         waitForStart();
 
@@ -151,19 +152,19 @@ public class Automus extends LinearOpMode {
                 }
                 break;
             case 1: //run robo to bucket and lift slides
-                robot.followPath(addPath(-30, 10, 45));
+                if(!robot.isBusy()) robot.followPath(addPath(-30, 10, 45));
                 target = 4200;
                 if(slidePos >= 4200) setPathState(2);
                 break;
             case 2:
-                robot.followPath(addPath(-32.5, 7.5, 45));
+                if(!robot.isBusy()) robot.followPath(addPath(-32.5, 7.5, 45));
                 if (time > 0.5) {
                     robot.timmy.setPosition(0);
                 }
                 if(robot.atParametricEnd()) setPathState(3);
                 break;
             case 3: //drop sample and back up
-                robot.followPath(addPath(-30, 10, 90));
+                if(!robot.isBusy()) robot.followPath(addPath(-30, 10, 90));
                 target = 0;
                 robot.neck.setPosition(0.3);
                 robot.wrist.setPosition(TelePOP.wristFDown);
