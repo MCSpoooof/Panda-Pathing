@@ -138,18 +138,22 @@ public class Automus extends LinearOpMode {
 
      public void pathUpdate() {
         double time = pathTimer.getElapsedTimeSeconds();
+         //TODO: USE timer FOR TIMING ACTIONS IN THE SAME CASE, FOR EXAMPLE
+         // if(timer >= 5) do somethin
+         // if(timer >= 2) something else!
+         // else if(timer >= 1)
         double slidePos = robot.frontSlides.getCurrentPosition();
         switch (pathState) {
             case 0: //Runs to the position of the preload and holds it's point at 0.5 power
                 if (pathTimer.getElapsedTimeSeconds() > 2)
-                    robot.timmy.setPosition(0.338);
+                    robot.timmy.setPosition(clawClose);
                 else {
                     robot.setMaxPower(1);
-                    robot.neck.setPosition(0.3);
+                    robot.neck.setPosition(neckBack);
                     robot.wrist.setPosition(wristBOut);
-                    robot.timmy.setPosition(0);
-                    robot.drv4bL.setPosition(0.567);
-                    robot.drv4bR.setPosition(0.379);
+                    robot.timmy.setPosition(clawClose);
+                    robot.drv4bL.setPosition(extendLMin);
+                    robot.drv4bR.setPosition(extendRMin);
                 }
                 break;
             case 1: //run robo to bucket and lift slides
@@ -158,7 +162,7 @@ public class Automus extends LinearOpMode {
                     stopped = false;
                 }
                 target = 4200;
-                if(slidePos >= 4200){
+                if(slidePos >= slideMax-300){
                     setPathState(2);
                     stopped = true;
                 }
@@ -168,33 +172,30 @@ public class Automus extends LinearOpMode {
                     robot.followPath(addPath(-32.5, 7.5, 45));
                     stopped = false;
                 }
-                if (time > 0.5) {
-                    robot.timmy.setPosition(0);
-                }
                 if(robot.atParametricEnd()){
+                    robot.timmy.setPosition(clawOpen);
                     setPathState(3);
                     stopped = true;
                 }
                 break;
             case 3: //drop sample and back up
                 if(stopped){
-                    robot.followPath(addPath(-30, 10, 90));
+                    robot.followPath(addPath(-25, 15, 90));
                     stopped = false;
                 }
                 target = 0;
-                robot.neck.setPosition(0.3);
+                robot.neck.setPosition(neckBack);
                 robot.wrist.setPosition(TelePOP.wristFDown);
-                if(time > 0.2)
-                    robot.timmy.setPosition(0.3);
                 if(robot.atParametricEnd()){
+                    robot.timmy.setPosition(clawClose);
                     setPathState(4);
                     stopped = true;
                 }
                 break;
             case 4:
-                robot.drv4bR.setPosition(1);
-                robot.drv4bL.setPosition(0);
-                if(robot.drv4bR.getPosition() == 1) setPathState(5);
+                robot.drv4bR.setPosition(extendRMax);
+                robot.drv4bL.setPosition(extendLMax);
+                if(robot.drv4bR.getPosition() == extendRMax) setPathState(5);
                 break;
             case 5:
 
