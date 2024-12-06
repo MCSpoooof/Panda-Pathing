@@ -109,7 +109,7 @@ public class TelePOP extends OpMode {
         double force = mass *(9.81); //N
         double kG = force/maxLinearForce;
         // slide power
-        double power = pid + kG;
+        double power = pid + (pid <= -0.1 ? 0 : kG);
 
         // change slide target based on controller control
         robot.frontSlides.setPower(power);

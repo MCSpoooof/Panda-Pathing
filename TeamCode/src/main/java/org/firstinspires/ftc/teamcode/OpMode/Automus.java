@@ -58,7 +58,7 @@ public class Automus extends LinearOpMode {
             double force = mass *(9.81); //N
             double kG = force/maxLinearForce;
             // slide power
-            double power = pid + kG;
+            double power = pid + (pid <= -0.1 ? 0 : kG);
             robot.frontSlides.setPower(power);
             robot.backSlides.setPower(power);
 
@@ -149,7 +149,7 @@ public class Automus extends LinearOpMode {
                 if (pathTimer.getElapsedTimeSeconds() > 2)
                     robot.timmy.setPosition(clawClose);
                 else {
-                    robot.setMaxPower(0.68);
+                    robot.setMaxPower(0.6);
                     robot.neck.setPosition(neckBack);
                     robot.wrist.setPosition(wristBOut);
                     robot.timmy.setPosition(clawOpen);
@@ -188,7 +188,7 @@ public class Automus extends LinearOpMode {
                 else if(time > 1) robot.timmy.setPosition(clawClose);
                 else if(time > 0.5) {target = 0; robot.neck.setPosition(neckBack);}
                 //Cache is a bit silly sometimes
-                if(slidePos <= target + 5 && time > 1.5){
+                if(slidePos <= target + 10 && time > 1.5){
                     setPathState(4);
                     stopped = true;
                 }
@@ -297,7 +297,7 @@ public class Automus extends LinearOpMode {
                 break;
             case 15: //drop sample and back up
                 if(stopped){
-                    robot.followPath(addPath(-29, 25, 110));
+                    robot.followPath(addPath(-32, 24, 110));
                     stopped = false;
                 }
                 if (time > 1.5) robot.wrist.setPosition(TelePOP.wristFDown);
